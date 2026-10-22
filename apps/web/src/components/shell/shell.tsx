@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Bolt } from "@/components/ui/icons";
-import { NAV_ITEMS, NAV_SECTIONS, isActive, type NavBadge } from "./nav";
+import { NAV_SECTIONS, isActive, type NavBadge } from "./nav";
 
 type ShellProps = {
   companyName: string;
@@ -43,9 +43,14 @@ export function Shell({ companyName, userName, counts, children }: ShellProps) {
         {/* 640–899: sticky top bar with a horizontally scrolling nav */}
         <div className="sticky top-0 z-30 hidden flex-col gap-3 bg-navy-800 px-3 pt-4 pb-3 sm:flex wide:hidden">
           <Logo companyName={companyName} />
-          <nav aria-label="Main" className="-mx-3 flex gap-1 overflow-x-auto px-3 [scrollbar-width:none]">
-            {[...NAV_ITEMS, { href: "/account", label: "Account" }].map((item) => (
-              <NavLink key={item.href} item={item} pathname={pathname} counts={counts} compact />
+          <nav aria-label="Main" className="-mx-3 flex items-center gap-1 overflow-x-auto px-3 [scrollbar-width:none]">
+            {[...NAV_SECTIONS, { label: "Account", items: [{ href: "/account", label: "Account" }] }].map((section, i) => (
+              <div key={section.label} role="group" aria-label={section.label} className="flex shrink-0 items-center gap-1">
+                {i > 0 && <span aria-hidden className="mx-1.5 h-6 w-px bg-white/20" />}
+                {section.items.map((item) => (
+                  <NavLink key={item.href} item={item} pathname={pathname} counts={counts} compact />
+                ))}
+              </div>
             ))}
           </nav>
         </div>
@@ -99,10 +104,14 @@ function Logo({ companyName }: { companyName: string }) {
 
 function NavList({ pathname, counts }: { pathname: string; counts: ShellProps["counts"] }) {
   return (
-    <nav aria-label="Main" className="flex flex-col gap-5">
-      {NAV_SECTIONS.map((section) => (
-        <div key={section.label} role="group" aria-label={section.label} className="flex flex-col gap-1">
-          <p className="px-3.5 text-xs font-medium tracking-[0.04em] text-white/60 uppercase">{section.label}</p>
+    <nav aria-label="Main" className="flex flex-col">
+      {NAV_SECTIONS.map((section, i) => (
+        <div
+          key={section.label}
+          role="group"
+          aria-label={section.label}
+          className={`flex flex-col gap-1 ${i > 0 ? "mx-2 mt-3 border-t border-white/15 pt-3 [&>a]:-mx-2" : ""}`}
+        >
           {section.items.map((item) => (
             <NavLink key={item.href} item={item} pathname={pathname} counts={counts} />
           ))}
