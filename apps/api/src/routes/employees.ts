@@ -45,7 +45,6 @@ export const employeeRoutes = new Hono<AppEnv>()
           id: e.id,
           firstName: e.firstName,
           lastName: e.lastName,
-          role: e.role,
           employmentType: e.employmentType,
           phone: e.phone ?? "",
           status: e.status,
@@ -62,9 +61,19 @@ export const employeeRoutes = new Hono<AppEnv>()
   })
 
   .post("/", validate("json", employeeCreateSchema), async (c) => {
-    await assertWithinPlan(c.get("companyId"));
-    const employee = await prisma.employee.create({
-      data: { ...c.req.valid("json"), companyId: c.get("companyId"), scheduleDays: [] },
+    const companyId = c.get("companyId");
+    const { serviceIds, ...fields } = c.req.valid("json");
+    await assertWithinPlan(companyId);
+    const ids = [...new Set(serviceIds)];
+    if ((await prisma.service.count({ where: { companyId, id: { in: ids } } })) !== ids.length) {
+      throw new HTTPException(400, { message: "Unknown service" });
+    }
+    const employee = await prisma.$transaction(async (tx) => {
+      const created = await tx.employee.create({ data: { ...fields, companyId, scheduleDays: [] } });
+      await tx.employeeService.createMany({
+        data: ids.map((serviceId) => ({ companyId, employeeId: created.id, serviceId })),
+      });
+      return created;
     });
     return c.json({ id: employee.id }, 201);
   })

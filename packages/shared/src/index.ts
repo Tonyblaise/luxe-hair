@@ -43,15 +43,6 @@ export const EMPLOYMENT_LABELS: Record<(typeof EMPLOYMENT_TYPES)[number], string
   full_time: "Full-time",
   contractor: "Contractor",
 };
-export const EMPLOYEE_ROLES = [
-  "Senior Stylist",
-  "Stylist",
-  "Colorist",
-  "Barber",
-  "Nail Tech",
-  "Esthetician",
-  "Receptionist",
-] as const;
 export const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 
 export const TASK_TYPES = ["task", "reminder"] as const;
@@ -205,15 +196,14 @@ export const taskUpdateSchema = z.object({ done: z.boolean() });
 export const employeeCreateSchema = z.object({
   firstName: name,
   lastName: name,
-  role: z.enum(EMPLOYEE_ROLES),
   employmentType: z.enum(EMPLOYMENT_TYPES),
   phone: optionalText(40),
+  serviceIds: z.array(z.uuid()).min(1, "Pick at least one service they perform.").max(200),
 });
 
 export const employeeUpdateSchema = z.object({
   firstName: name.optional(),
   lastName: name.optional(),
-  role: z.enum(EMPLOYEE_ROLES).optional(),
   employmentType: z.enum(EMPLOYMENT_TYPES).optional(),
   phone: z.string().trim().max(40).optional(),
   status: z.enum(["active", "inactive"]).optional(),

@@ -3,14 +3,13 @@
 import { RETAIL_COMMISSION_PCT } from "@luxe-hair/shared";
 import { Fragment, useState } from "react";
 import { Avatar, Chip } from "@/components/ui";
-import { formatKES } from "@/lib/format";
+import { formatKES, servicesSummary } from "@/lib/format";
 import { PayButton } from "./pay-button";
 
 type Line = { serviceId: string; name: string; count: number; price: number; commissionType: "percent" | "flat"; commission: number; earned: number };
 export type PayoutRowView = {
   employeeId: string;
   name: string;
-  role: string;
   serviceSales: number;
   serviceCommission: number;
   retailSales: number;
@@ -90,7 +89,7 @@ export function PayoutTable({ rows }: { rows: PayoutRowView[] }) {
                       <Avatar name={r.name} size={32} />
                       <span className="min-w-0">
                         <span className="block font-semibold">{r.name}</span>
-                        <span className="block text-xs text-gray-500">{r.role}</span>
+                        <span className="block text-xs text-gray-500">{servicesSummary(r.lines.map((l) => l.name))}</span>
                       </span>
                     </span>
                   </td>

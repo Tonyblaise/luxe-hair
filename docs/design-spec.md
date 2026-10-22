@@ -3,7 +3,7 @@
 Extracted from Claude Design project `6a35e124-e709-4a43-8cef-d171b03560bc`, file `Salon Manager.dc.html` (one responsive app; `Salon Manager Mobile.dc.html` only shows it in 390px phone frames). Design system: "Focus Digital" (`colors_and_type.css`).
 
 Project decisions that override the design:
-- Employee has no email, start date or working hours (schema doc wins).
+- Employee has no email, start date or working hours (schema doc wins), and no job role: employees are described by the services they perform (picked when adding them).
 - Payment methods are Card / Cash / M-Pesa (design says Other).
 - The salon nav is grouped, with divider lines between groups — Overview (Dashboard, Reports), Operations (Sales Log, Payouts, Expenses, Inventory), Work (Tasks, Services), People (Employees, Team) — instead of the design's flat list.
 - "Today" is the real date in Africa/Nairobi (design hardcodes 2026-10-14). Amounts are real KES values (design multiplies USD × 130).
@@ -97,9 +97,9 @@ Money: `KES 12,345`; charts short form `KES 40k` / `KES 1.2M`.
 
 ### Employees
 - Master/detail `minmax(320px,400px) | 1fr` at ≥ 1100; below, list or detail.
-- List card (padding 20): pills Active / Inactive / All with counts. Row buttons `40px | 1fr | auto`, padding 12, radius 10; selected 2px cyan-400 border on cyan-100. Avatar 40, name 15/600, "Role · Full-time" 13px, dot 8px + "Working today" (cyan) / "Off today" (gray-300) / "Inactive" (gray-400).
-- Detail card (padding `clamp(20px,4vw,32px)`, gap 28): navy avatar clamp(52–64), name clamp(22–26)/700, "Role · Type" + status chip, outline "Deactivate"/"Reactivate". Mini KPIs Sales This Week / Payout This Week / Appointments Today (mobile "Sales · Wk", "Payout · Wk", "Appts Today"). "DETAILS": first/last name, Role select (Senior Stylist, Stylist, Colorist, Barber, Nail Tech, Esthetician, Receptionist), Employment type, Phone — save live. "WEEKLY SCHEDULE · N days a week": 7 toggles (grid 7, h44; on navy fill, off white 1px gray-300; Mon…Sun, mobile "Mo"). "SERVICES THEY PERFORM": pill toggle per service.
-- Add Employee card (max 720): names, Role, Employment type, Phone; note "You can set their schedule and services after adding them."; button "Add Employee".
+- List card (padding 20): pills Active / Inactive / All with counts. Row buttons `40px | 1fr | auto`, padding 12, radius 10; selected 2px cyan-400 border on cyan-100. Avatar 40, name 15/600, "Services · Full-time" 13px, dot 8px + "Working today" (cyan) / "Off today" (gray-300) / "Inactive" (gray-400).
+- Detail card (padding `clamp(20px,4vw,32px)`, gap 28): navy avatar clamp(52–64), name clamp(22–26)/700, "Type · Services" + status chip, outline "Deactivate"/"Reactivate". Mini KPIs Sales This Week / Payout This Week / Appointments Today (mobile "Sales · Wk", "Payout · Wk", "Appts Today"). "DETAILS": first/last name, Employment type, Phone — save live. "WEEKLY SCHEDULE · N days a week": 7 toggles (grid 7, h44; on navy fill, off white 1px gray-300; Mon…Sun, mobile "Mo"). "SERVICES THEY PERFORM": pill toggle per service.
+- Add Employee card (max 720): names, Employment type, Phone, service toggles (at least one); note "You can set their schedule after adding them."; button "Add Employee".
 - Mobile detail has "← All Employees" (cyan 15/600).
 
 ### Team (app users)

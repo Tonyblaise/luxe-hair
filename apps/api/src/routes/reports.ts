@@ -52,7 +52,7 @@ export const reportRoutes = new Hono<AppEnv>()
         _count: true,
         _sum: { amount: true },
       }),
-      prisma.employee.findMany({ where: { companyId }, select: { id: true, firstName: true, lastName: true, role: true } }),
+      prisma.employee.findMany({ where: { companyId }, select: { id: true, firstName: true, lastName: true } }),
       prisma.service.findMany({ where: { companyId } }),
     ]);
 
@@ -90,7 +90,6 @@ export const reportRoutes = new Hono<AppEnv>()
         return {
           id: e.id,
           name: `${e.firstName} ${e.lastName}`,
-          role: e.role,
           sales,
           appointments,
           avgTicket: appointments ? Math.round(sales / appointments) : 0,

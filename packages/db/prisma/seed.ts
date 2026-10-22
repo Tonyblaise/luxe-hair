@@ -43,14 +43,14 @@ const SERVICES = [
 ] as const;
 
 const EMPLOYEES = [
-  { firstName: "Ava", lastName: "Reyes", role: "Senior Stylist", employmentType: "full_time", phone: "0712 201 441", days: ["Tue", "Wed", "Thu", "Fri", "Sat"], services: ["Cut & Style", "Blowout", "Balayage", "Single-Process Color"] },
-  { firstName: "Marcus", lastName: "Lee", role: "Barber", employmentType: "full_time", phone: "0712 337 902", days: ["Mon", "Tue", "Wed", "Thu", "Fri"], services: ["Men's Cut", "Beard Trim"] },
-  { firstName: "Priya", lastName: "Shah", role: "Colorist", employmentType: "full_time", phone: "0722 118 560", days: ["Wed", "Thu", "Fri", "Sat", "Sun"], services: ["Single-Process Color", "Balayage", "Blowout"] },
-  { firstName: "Jade", lastName: "Kim", role: "Nail Tech", employmentType: "contractor", phone: "0733 904 217", days: ["Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], services: ["Gel Manicure", "Spa Pedicure"] },
-  { firstName: "Sofia", lastName: "Russo", role: "Esthetician", employmentType: "full_time", phone: "0701 556 823", days: ["Mon", "Wed", "Thu", "Fri", "Sat"], services: ["Signature Facial", "Brow Shape"] },
-  { firstName: "Noah", lastName: "Bennett", role: "Stylist", employmentType: "full_time", phone: "0745 662 019", days: ["Mon", "Tue", "Thu", "Fri", "Sat"], services: ["Cut & Style", "Men's Cut", "Blowout"] },
-  { firstName: "Lena", lastName: "Park", role: "Stylist", employmentType: "contractor", phone: "0757 230 884", days: ["Fri", "Sat", "Sun"], services: ["Cut & Style", "Blowout"] },
-  { firstName: "Omar", lastName: "Haddad", role: "Barber", employmentType: "contractor", phone: "0768 412 337", days: ["Sat", "Sun"], services: ["Men's Cut", "Beard Trim"], inactive: true },
+  { firstName: "Ava", lastName: "Reyes", employmentType: "full_time", phone: "0712 201 441", days: ["Tue", "Wed", "Thu", "Fri", "Sat"], services: ["Cut & Style", "Blowout", "Balayage", "Single-Process Color"] },
+  { firstName: "Marcus", lastName: "Lee", employmentType: "full_time", phone: "0712 337 902", days: ["Mon", "Tue", "Wed", "Thu", "Fri"], services: ["Men's Cut", "Beard Trim"] },
+  { firstName: "Priya", lastName: "Shah", employmentType: "full_time", phone: "0722 118 560", days: ["Wed", "Thu", "Fri", "Sat", "Sun"], services: ["Single-Process Color", "Balayage", "Blowout"] },
+  { firstName: "Jade", lastName: "Kim", employmentType: "contractor", phone: "0733 904 217", days: ["Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], services: ["Gel Manicure", "Spa Pedicure"] },
+  { firstName: "Sofia", lastName: "Russo", employmentType: "full_time", phone: "0701 556 823", days: ["Mon", "Wed", "Thu", "Fri", "Sat"], services: ["Signature Facial", "Brow Shape"] },
+  { firstName: "Noah", lastName: "Bennett", employmentType: "full_time", phone: "0745 662 019", days: ["Mon", "Tue", "Thu", "Fri", "Sat"], services: ["Cut & Style", "Men's Cut", "Blowout"] },
+  { firstName: "Lena", lastName: "Park", employmentType: "contractor", phone: "0757 230 884", days: ["Fri", "Sat", "Sun"], services: ["Cut & Style", "Blowout"] },
+  { firstName: "Omar", lastName: "Haddad", employmentType: "contractor", phone: "0768 412 337", days: ["Sat", "Sun"], services: ["Men's Cut", "Beard Trim"], inactive: true },
 ] as const;
 
 const CLIENTS = [
@@ -151,7 +151,6 @@ async function main() {
               companyId,
               firstName: e.firstName,
               lastName: e.lastName,
-              role: e.role,
               employmentType: e.employmentType,
               phone: e.phone,
               scheduleDays: [...e.days],
@@ -401,7 +400,6 @@ async function seedPlatform(passwordHash: string) {
             companyId: company.id,
             firstName: pick(["Amani", "Baraka", "Imani", "Neema", "Juma", "Halima", "Otieno", "Wairimu"]),
             lastName: `Staff ${n + 1}`,
-            role: pick(["Stylist", "Barber", "Nail Tech", "Esthetician"]),
             employmentType: "full_time" as const,
             scheduleDays: ["Tue", "Wed", "Thu", "Fri", "Sat"],
           })),

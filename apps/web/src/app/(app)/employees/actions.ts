@@ -16,8 +16,11 @@ export async function updateEmployee(id: string, patch: EmployeeUpdateInput, toa
 }
 
 export async function createEmployee(_: ActionState, formData: FormData): Promise<ActionState> {
-  const parsed = employeeCreateSchema.safeParse(Object.fromEntries(formData));
-  if (!parsed.success) return fail(firstIssue(parsed.error, "Enter a name, role and employment type."));
+  const parsed = employeeCreateSchema.safeParse({
+    ...Object.fromEntries(formData),
+    serviceIds: formData.getAll("serviceIds"),
+  });
+  if (!parsed.success) return fail(firstIssue(parsed.error, "Enter a name and pick their services."));
   const client = await api();
   let id = "";
   const result = await mutate(async () => {

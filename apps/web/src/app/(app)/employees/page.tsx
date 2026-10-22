@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ActionLabel, PageBody, PageHeader } from "@/components/shell/page";
 import { Avatar, ButtonLink, Card, EmptyState, PillLink, PillRow } from "@/components/ui";
 import { api, unwrap } from "@/lib/api";
+import { servicesSummary } from "@/lib/format";
 import { EmployeeDetail } from "./employee-detail";
 import { NewEmployeeCard } from "./new-employee-card";
 
@@ -83,7 +84,7 @@ export default async function EmployeesPage({
                             {e.firstName} {e.lastName}
                           </span>
                           <span className="block truncate text-[13px] text-gray-600">
-                            {e.role} · {EMPLOYMENT_LABELS[e.employmentType]}
+                            {servicesSummary(services.filter((s) => e.serviceIds.includes(s.id)).map((s) => s.name))} · {EMPLOYMENT_LABELS[e.employmentType]}
                           </span>
                         </span>
                         <span className="flex items-center gap-1.5 text-xs whitespace-nowrap text-gray-600">
@@ -104,7 +105,7 @@ export default async function EmployeesPage({
             </Link>
             <Card padding="p-[clamp(20px,4vw,32px)]">
               {creating ? (
-                <NewEmployeeCard />
+                <NewEmployeeCard services={services} />
               ) : selected ? (
                 <EmployeeDetail key={selected.id} employee={selected} services={services} />
               ) : (

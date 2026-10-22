@@ -233,7 +233,6 @@ model Employee {
   company        Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
   firstName      String         @map("first_name")
   lastName       String         @map("last_name")
-  role           String
   employmentType EmploymentType @map("employment_type")
   phone          String?
   status         EmployeeStatus @default(active)

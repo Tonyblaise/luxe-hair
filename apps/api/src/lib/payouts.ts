@@ -14,7 +14,6 @@ export type PayoutLine = {
 export type PayoutRow = {
   employeeId: string;
   name: string;
-  role: string;
   serviceSales: number;
   serviceCommission: number;
   retailSales: number;
@@ -44,7 +43,6 @@ export async function computeWeek(companyId: string, weekStart: Date): Promise<P
       row = {
         employeeId: s.employeeId,
         name: `${s.employee.firstName} ${s.employee.lastName}`,
-        role: s.employee.role,
         serviceSales: 0,
         serviceCommission: 0,
         retailSales: 0,

@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  EMPLOYEE_ROLES,
   EMPLOYMENT_LABELS,
   EMPLOYMENT_TYPES,
   WEEKDAYS,
@@ -9,14 +8,13 @@ import {
 } from "@luxe-hair/shared";
 import { useState, useTransition } from "react";
 import { Avatar, Button, Chip, Field, FormGrid, MiniKpi, PillButton, SectionLabel, SelectField, useToast } from "@/components/ui";
-import { formatKES } from "@/lib/format";
+import { formatKES, servicesSummary } from "@/lib/format";
 import { updateEmployee } from "./actions";
 
 export type EmployeeView = {
   id: string;
   firstName: string;
   lastName: string;
-  role: string;
   employmentType: "full_time" | "contractor";
   phone: string;
   status: "active" | "inactive";
@@ -80,7 +78,7 @@ export function EmployeeDetail({
           <h2 className="text-[clamp(22px,5vw,26px)] leading-tight font-bold">{name}</h2>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-gray-600">
             <span>
-              {employee.role} · {EMPLOYMENT_LABELS[employee.employmentType]}
+              {EMPLOYMENT_LABELS[employee.employmentType]} · {servicesSummary(services.filter((s) => serviceIds.includes(s.id)).map((s) => s.name))}
             </span>
             <Chip tone={active ? "info" : "neutral"}>{active ? "Active" : "Inactive"}</Chip>
           </div>
@@ -108,15 +106,6 @@ export function EmployeeDetail({
         <FormGrid>
           <Field label="First name" defaultValue={employee.firstName} onBlur={onBlurText("firstName")} />
           <Field label="Last name" defaultValue={employee.lastName} onBlur={onBlurText("lastName")} />
-          <SelectField
-            label="Role"
-            defaultValue={employee.role}
-            onChange={(e) => save({ role: e.target.value as (typeof EMPLOYEE_ROLES)[number] }, "Role saved")}
-          >
-            {EMPLOYEE_ROLES.map((r) => (
-              <option key={r}>{r}</option>
-            ))}
-          </SelectField>
           <SelectField
             label="Employment type"
             defaultValue={employee.employmentType}
