@@ -1,13 +1,11 @@
 export type NavBadge = "tasks" | "lowStock";
 export type NavItem = { href: string; label: string; badge?: NavBadge };
 
-/** Overview first, day-to-day money and stock in the middle, setup last. */
 export const NAV_SECTIONS: { label: string; items: NavItem[] }[] = [
   {
     label: "Overview",
     items: [
       { href: "/", label: "Dashboard" },
-      { href: "/tasks", label: "Tasks", badge: "tasks" },
       { href: "/reports", label: "Reports" },
     ],
   },
@@ -21,10 +19,16 @@ export const NAV_SECTIONS: { label: string; items: NavItem[] }[] = [
     ],
   },
   {
-    label: "Setup",
+    label: "Work",
+    items: [
+      { href: "/tasks", label: "Tasks", badge: "tasks" },
+      { href: "/services", label: "Services" },
+    ],
+  },
+  {
+    label: "People",
     items: [
       { href: "/employees", label: "Employees" },
-      { href: "/services", label: "Services" },
       { href: "/team", label: "Team" },
     ],
   },

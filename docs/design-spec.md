@@ -5,7 +5,7 @@ Extracted from Claude Design project `6a35e124-e709-4a43-8cef-d171b03560bc`, fil
 Project decisions that override the design:
 - Employee has no email, start date or working hours (schema doc wins).
 - Payment methods are Card / Cash / M-Pesa (design says Other).
-- The salon nav is grouped, with divider lines between groups — Overview (Dashboard, Tasks, Reports), Operations (Sales Log, Payouts, Expenses, Inventory), Setup (Employees, Services, Team) — instead of the design's flat list.
+- The salon nav is grouped, with divider lines between groups — Overview (Dashboard, Reports), Operations (Sales Log, Payouts, Expenses, Inventory), Work (Tasks, Services), People (Employees, Team) — instead of the design's flat list.
 - "Today" is the real date in Africa/Nairobi (design hardcodes 2026-10-14). Amounts are real KES values (design multiplies USD × 130).
 
 ## Tokens
