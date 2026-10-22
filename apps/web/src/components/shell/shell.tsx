@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Bolt } from "@/components/ui/icons";
-import { NAV_ITEMS, isActive, type NavBadge } from "./nav";
+import { NAV_ITEMS, NAV_SECTIONS, isActive, type NavBadge } from "./nav";
 
 type ShellProps = {
   companyName: string;
@@ -99,9 +99,14 @@ function Logo({ companyName }: { companyName: string }) {
 
 function NavList({ pathname, counts }: { pathname: string; counts: ShellProps["counts"] }) {
   return (
-    <nav aria-label="Main" className="flex flex-col gap-1">
-      {NAV_ITEMS.map((item) => (
-        <NavLink key={item.href} item={item} pathname={pathname} counts={counts} />
+    <nav aria-label="Main" className="flex flex-col gap-5">
+      {NAV_SECTIONS.map((section) => (
+        <div key={section.label} role="group" aria-label={section.label} className="flex flex-col gap-1">
+          <p className="px-3.5 text-xs font-medium tracking-[0.04em] text-white/60 uppercase">{section.label}</p>
+          {section.items.map((item) => (
+            <NavLink key={item.href} item={item} pathname={pathname} counts={counts} />
+          ))}
+        </div>
       ))}
     </nav>
   );
