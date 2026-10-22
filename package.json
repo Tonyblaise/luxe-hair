@@ -1,0 +1,26 @@
+{
+  "name": "luxe-hair",
+  "private": true,
+  "version": "0.0.0",
+  "packageManager": "npm@11.14.0",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "db:generate": "npm run generate -w @luxe-hair/db",
+    "db:migrate": "npm run migrate -w @luxe-hair/db",
+    "db:seed": "npm run seed -w @luxe-hair/db",
+    "db:studio": "npm run studio -w @luxe-hair/db"
+  },
+  "devDependencies": {
+    "turbo": "^2.11.10",
+    "typescript": "^5.9.3"
+  }
+}

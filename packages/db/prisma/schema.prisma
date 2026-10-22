@@ -1,0 +1,459 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------- enums
+
+enum EmploymentType {
+  full_time
+  contractor
+}
+
+enum EmployeeStatus {
+  active
+  inactive
+}
+
+enum TeamRole {
+  owner
+  manager
+  front_desk
+  accountant
+}
+
+enum TeamMemberStatus {
+  active
+  invited
+}
+
+enum AppointmentStatus {
+  booked
+  check_in
+  checked_in
+  completed
+}
+
+enum PaymentMethod {
+  card
+  cash
+  mpesa
+}
+
+enum PayoutStatus {
+  pending
+  paid
+}
+
+enum ExpenseCategory {
+  rent_utilities
+  products_supplies
+  payroll
+  marketing
+  equipment
+}
+
+enum TaskType {
+  task
+  reminder
+}
+
+enum TaskRepeat {
+  none
+  daily
+  weekly
+  monthly
+}
+
+enum TaskStatus {
+  open
+  done
+}
+
+enum CommissionType {
+  percent
+  flat
+}
+
+enum InventoryType {
+  retail
+  backbar
+}
+
+enum CompanyStatus {
+  invited
+  trial
+  active
+  suspended
+}
+
+// ---------------------------------------------------------------- platform (not tenant-scoped)
+
+model Plan {
+  id            String    @id @default(uuid())
+  name          String    @unique
+  price         Int
+  // Null means unlimited.
+  employeeLimit Int?      @map("employee_limit")
+  sortOrder     Int       @default(0) @map("sort_order")
+  createdDate   DateTime  @default(now()) @map("created_date")
+  modifiedDate  DateTime  @updatedAt @map("modified_date")
+  companies     Company[]
+
+  @@map("plans")
+}
+
+/// Single row (id = 1).
+model PlatformSettings {
+  id             Int      @id @default(1)
+  platformName   String   @default("Salon Manager") @map("platform_name")
+  supportEmail   String   @default("") @map("support_email")
+  supportPhone   String   @default("") @map("support_phone")
+  trialDays      Int      @default(14) @map("trial_days")
+  inviteDays     Int      @default(7) @map("invite_days")
+  notifySignup   Boolean  @default(true) @map("notify_signup")
+  notifyTrialEnd Boolean  @default(true) @map("notify_trial_end")
+  notifyOverdue  Boolean  @default(true) @map("notify_overdue")
+  notifyWeekly   Boolean  @default(false) @map("notify_weekly")
+  modifiedDate   DateTime @updatedAt @map("modified_date")
+
+  @@map("platform_settings")
+}
+
+model PlatformAdmin {
+  id                String    @id @default(uuid())
+  name              String
+  email             String    @unique
+  phone             String?
+  encryptedPassword String    @map("encrypted_password")
+  tokensValidAfter  DateTime  @default(now()) @map("tokens_valid_after")
+  lastSignInAt      DateTime? @map("last_sign_in_at")
+  createdDate       DateTime  @default(now()) @map("created_date")
+  modifiedDate      DateTime  @updatedAt @map("modified_date")
+
+  @@map("platform_admins")
+}
+
+// ---------------------------------------------------------------- core
+
+model Company {
+  id           String        @id @default(uuid())
+  name         String
+  // Optional only so sign-up can create the company before its admin user.
+  adminId      String?       @unique @map("admin_id")
+  admin        User?         @relation("CompanyAdmin", fields: [adminId], references: [id], onDelete: SetNull)
+  currency     String        @default("KES")
+  logo         String?
+  city         String?
+  status       CompanyStatus @default(active)
+  planId       String?       @map("plan_id")
+  plan         Plan?         @relation(fields: [planId], references: [id], onDelete: SetNull)
+  trialEndsAt  DateTime?     @map("trial_ends_at")
+  invitedAt    DateTime?     @map("invited_at")
+  suspendedAt  DateTime?     @map("suspended_at")
+  // Shown in the admin console for suspended companies, e.g. "Payment overdue".
+  statusNote   String?       @map("status_note")
+  createdDate  DateTime      @default(now()) @map("created_date")
+  modifiedDate DateTime      @updatedAt @map("modified_date")
+
+  users             User[]             @relation("CompanyUsers")
+  teamMembers       TeamMember[]
+  employees         Employee[]
+  services          Service[]
+  employeeServices  EmployeeService[]
+  clients           Client[]
+  appointments      Appointment[]
+  sales             Sale[]
+  payouts           Payout[]
+  expenses          Expense[]
+  recurringExpenses RecurringExpense[]
+  tasks             Task[]
+  inventoryProducts InventoryProduct[]
+
+  @@index([status])
+  @@map("companies")
+}
+
+// ---------------------------------------------------------------- auth
+
+model User {
+  id                String    @id @default(uuid())
+  companyId         String    @map("company_id")
+  company           Company   @relation("CompanyUsers", fields: [companyId], references: [id], onDelete: Cascade)
+  email             String    @unique
+  encryptedPassword String?   @map("encrypted_password")
+  emailConfirmedAt  DateTime? @map("email_confirmed_at")
+  phone             String?   @unique
+  phoneConfirmedAt  DateTime? @map("phone_confirmed_at")
+  role              String    @default("authenticated")
+  lastSignInAt      DateTime? @map("last_sign_in_at")
+  bannedUntil       DateTime? @map("banned_until")
+  appMetadata       Json?     @map("app_metadata")
+  userMetadata      Json?     @map("user_metadata")
+  deletedAt         DateTime? @map("deleted_at")
+  tokensValidAfter  DateTime  @default(now()) @map("tokens_valid_after")
+  createdDate       DateTime  @default(now()) @map("created_date")
+  modifiedDate      DateTime  @updatedAt @map("modified_date")
+
+  adminOf    Company?    @relation("CompanyAdmin")
+  teamMember TeamMember?
+
+  @@index([companyId])
+  @@map("users")
+}
+
+// ---------------------------------------------------------------- people & services
+
+model TeamMember {
+  id           String           @id @default(uuid())
+  companyId    String           @map("company_id")
+  company      Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  firstName    String           @map("first_name")
+  lastName     String           @map("last_name")
+  role         TeamRole
+  status       TeamMemberStatus @default(invited)
+  lastActive   DateTime?        @map("last_active")
+  invitedDate  DateTime?        @map("invited_date") @db.Date
+  userId       String           @unique @map("user_id")
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdDate  DateTime         @default(now()) @map("created_date")
+  modifiedDate DateTime         @updatedAt @map("modified_date")
+
+  @@index([companyId, status])
+  @@map("team_members")
+}
+
+model Employee {
+  id             String         @id @default(uuid())
+  companyId      String         @map("company_id")
+  company        Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  firstName      String         @map("first_name")
+  lastName       String         @map("last_name")
+  role           String
+  employmentType EmploymentType @map("employment_type")
+  phone          String?
+  status         EmployeeStatus @default(active)
+  scheduleDays   String[]       @map("schedule_days")
+  createdDate    DateTime       @default(now()) @map("created_date")
+  modifiedDate   DateTime       @updatedAt @map("modified_date")
+
+  employeeServices EmployeeService[]
+  appointments     Appointment[]
+  sales            Sale[]
+  payouts          Payout[]
+
+  @@index([companyId, status])
+  @@map("employees")
+}
+
+model Service {
+  id             String         @id @default(uuid())
+  companyId      String         @map("company_id")
+  company        Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name           String
+  price          Int
+  commissionType CommissionType @default(percent) @map("commission_type")
+  // A percentage of price, or flat KES per service, depending on commissionType.
+  commission     Int
+  createdDate    DateTime       @default(now()) @map("created_date")
+  modifiedDate   DateTime       @updatedAt @map("modified_date")
+
+  employeeServices EmployeeService[]
+  appointments     Appointment[]
+  sales            Sale[]
+
+  @@unique([companyId, name])
+  @@map("services")
+}
+
+model EmployeeService {
+  id           String   @id @default(uuid())
+  companyId    String   @map("company_id")
+  company      Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  employeeId   String   @map("employee_id")
+  employee     Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  serviceId    String   @map("service_id")
+  service      Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  createdDate  DateTime @default(now()) @map("created_date")
+  modifiedDate DateTime @updatedAt @map("modified_date")
+
+  @@unique([companyId, employeeId, serviceId])
+  @@index([companyId, serviceId])
+  @@map("employee_services")
+}
+
+model Client {
+  id           String   @id @default(uuid())
+  companyId    String   @map("company_id")
+  company      Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  firstName    String   @map("first_name")
+  lastName     String   @map("last_name")
+  phone        String?
+  email        String?
+  createdDate  DateTime @default(now()) @map("created_date")
+  modifiedDate DateTime @updatedAt @map("modified_date")
+
+  appointments Appointment[]
+  sales        Sale[]
+
+  @@index([companyId, lastName, firstName])
+  @@index([companyId, phone])
+  @@map("clients")
+}
+
+// ---------------------------------------------------------------- scheduling & sales
+
+model Appointment {
+  id           String            @id @default(uuid())
+  companyId    String            @map("company_id")
+  company      Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  date         DateTime          @db.Date
+  time         String
+  clientId     String            @map("client_id")
+  client       Client            @relation(fields: [clientId], references: [id])
+  serviceId    String            @map("service_id")
+  service      Service           @relation(fields: [serviceId], references: [id])
+  employeeId   String            @map("employee_id")
+  employee     Employee          @relation(fields: [employeeId], references: [id])
+  status       AppointmentStatus @default(booked)
+  createdDate  DateTime          @default(now()) @map("created_date")
+  modifiedDate DateTime          @updatedAt @map("modified_date")
+
+  @@index([companyId, date, time])
+  @@index([companyId, employeeId, date])
+  @@index([companyId, clientId, date])
+  @@map("appointments")
+}
+
+model Sale {
+  id            String        @id @default(uuid())
+  companyId     String        @map("company_id")
+  company       Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  date          DateTime      @db.Date
+  serviceId     String        @map("service_id")
+  service       Service       @relation(fields: [serviceId], references: [id])
+  employeeId    String        @map("employee_id")
+  employee      Employee      @relation(fields: [employeeId], references: [id])
+  clientId      String?       @map("client_id")
+  client        Client?       @relation(fields: [clientId], references: [id])
+  paymentMethod PaymentMethod @map("payment_method")
+  amount        Int
+  tipAmount     Int           @default(0) @map("tip_amount")
+  createdDate   DateTime      @default(now()) @map("created_date")
+  modifiedDate  DateTime      @updatedAt @map("modified_date")
+
+  @@index([companyId, date])
+  @@index([companyId, employeeId, date])
+  @@index([companyId, clientId])
+  @@map("sales")
+}
+
+// ---------------------------------------------------------------- finance
+
+model Payout {
+  id                String       @id @default(uuid())
+  companyId         String       @map("company_id")
+  company           Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  employeeId        String       @map("employee_id")
+  employee          Employee     @relation(fields: [employeeId], references: [id])
+  weekStart         DateTime     @map("week_start") @db.Date
+  weekEnd           DateTime     @map("week_end") @db.Date
+  serviceSales      Int          @map("service_sales")
+  serviceCommission Int          @map("service_commission")
+  retailCommission  Int          @default(0) @map("retail_commission")
+  tips              Int          @default(0)
+  totalPayout       Int          @map("total_payout")
+  status            PayoutStatus @default(pending)
+  payDay            String?      @map("pay_day")
+  createdDate       DateTime     @default(now()) @map("created_date")
+  modifiedDate      DateTime     @updatedAt @map("modified_date")
+
+  @@unique([companyId, employeeId, weekStart])
+  @@index([companyId, status, weekStart])
+  @@map("payouts")
+}
+
+model Expense {
+  id                 String            @id @default(uuid())
+  companyId          String            @map("company_id")
+  company            Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  date               DateTime          @db.Date
+  description        String
+  category           ExpenseCategory
+  amount             Int
+  hasReceipt         Boolean           @default(false) @map("has_receipt")
+  receiptPath        String?           @map("receipt_path")
+  isRecurring        Boolean           @default(false) @map("is_recurring")
+  recurringExpenseId String?           @map("recurring_expense_id")
+  recurringExpense   RecurringExpense? @relation(fields: [recurringExpenseId], references: [id], onDelete: SetNull)
+  createdDate        DateTime          @default(now()) @map("created_date")
+  modifiedDate       DateTime          @updatedAt @map("modified_date")
+
+  @@index([companyId, date])
+  @@index([companyId, category, date])
+  @@index([recurringExpenseId, date])
+  @@map("expenses")
+}
+
+model RecurringExpense {
+  id           String          @id @default(uuid())
+  companyId    String          @map("company_id")
+  company      Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name         String
+  amount       Int
+  category     ExpenseCategory
+  autoPostDay  Int             @default(1) @map("auto_post_day")
+  createdDate  DateTime        @default(now()) @map("created_date")
+  modifiedDate DateTime        @updatedAt @map("modified_date")
+
+  expenses Expense[]
+
+  @@index([companyId, autoPostDay])
+  @@map("recurring_expenses")
+}
+
+// ---------------------------------------------------------------- operations
+
+model Task {
+  id           String     @id @default(uuid())
+  companyId    String     @map("company_id")
+  company      Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  title        String
+  type         TaskType
+  assignedTo   String     @map("assigned_to")
+  dueDate      DateTime   @map("due_date") @db.Date
+  dueTime      String?    @map("due_time")
+  repeat       TaskRepeat @default(none)
+  status       TaskStatus @default(open)
+  createdDate  DateTime   @default(now()) @map("created_date")
+  modifiedDate DateTime   @updatedAt @map("modified_date")
+
+  @@index([companyId, status, dueDate])
+  @@index([companyId, assignedTo, status])
+  @@map("tasks")
+}
+
+model InventoryProduct {
+  id              String        @id @default(uuid())
+  companyId       String        @map("company_id")
+  company         Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name            String
+  brand           String?
+  type            InventoryType @default(retail)
+  quantityInStock Int           @map("quantity_in_stock")
+  reorderPoint    Int           @map("reorder_point")
+  category        String?
+  unitCost        Int?          @map("unit_cost")
+  // Sell price; empty for backbar stock that isn't sold.
+  price           Int?
+  createdDate     DateTime      @default(now()) @map("created_date")
+  modifiedDate    DateTime      @updatedAt @map("modified_date")
+
+  @@unique([companyId, name])
+  @@index([companyId, category])
+  @@map("inventory_products")
+}

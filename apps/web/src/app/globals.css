@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+/* Focus Digital design system — see docs/design-spec.md */
+@theme {
+  --color-navy-900: #14205a;
+  --color-navy-800: #1e2b6b;
+  --color-navy-700: #2a3a85;
+  --color-navy-600: #3b4da0;
+  --color-navy-500: #5b6bb5;
+
+  --color-cyan-600: #2ba8e0;
+  --color-cyan-500: #3bb4e8;
+  --color-cyan-400: #4fc3f7;
+  --color-cyan-300: #7dd3fa;
+  --color-cyan-200: #a9def7;
+  --color-cyan-100: #e0f4fd;
+
+  --color-yellow-600: #d9b026;
+  --color-yellow-500: #e8be2e;
+  --color-yellow-400: #f4cb45;
+  --color-yellow-200: #fce9a0;
+
+  --color-offwhite: #eef1f2;
+  --color-paper: #f6f8fa;
+
+  --color-gray-100: #f1f3f5;
+  --color-gray-200: #e1e5eb;
+  --color-gray-300: #d5dae0;
+  --color-gray-400: #b1b8c2;
+  --color-gray-500: #7c8694;
+  --color-gray-600: #525c6b;
+  --color-gray-700: #364152;
+
+  --color-success: #2ecc71;
+  --color-danger: #e74c3c;
+
+  --font-sans: var(--font-poppins), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 4px 8px rgba(15, 23, 42, 0.06), 0 2px 4px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 12px 24px rgba(15, 23, 42, 0.1), 0 4px 8px rgba(15, 23, 42, 0.04);
+  --shadow-xl: 0 24px 48px rgba(30, 43, 107, 0.18);
+
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  /* sm 640 = phone/tablet split, wide 900 = sidebar layout, xl 1100 = two-pane employees */
+  --breakpoint-wide: 56.25rem;
+  --breakpoint-xl: 68.75rem;
+}
+
+@layer base {
+  body {
+    @apply bg-offwhite font-sans text-navy-800 antialiased;
+    line-height: 1.65;
+  }
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  ::selection {
+    background: var(--color-yellow-400);
+    color: var(--color-navy-800);
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@utility eyebrow {
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+@utility transition-ui {
+  transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+  transition-duration: 150ms;
+  transition-timing-function: var(--ease-out);
+}
