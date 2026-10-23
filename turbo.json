@@ -26,7 +26,8 @@
     },
     "typecheck": {
       "dependsOn": [
-        "^generate"
+        "^generate",
+        "generate"
       ],
       "outputs": []
     },
