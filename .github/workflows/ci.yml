@@ -18,8 +18,8 @@ jobs:
       # prisma.config.ts requires a URL even for `prisma generate`; nothing connects to it here.
       DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -55,8 +55,8 @@ jobs:
             echo "::error::Add these repository secrets to deploy:$missing (see docs/deploy.md)"
             exit 1
           fi
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version-file: .nvmrc
           cache: npm
