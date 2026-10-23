@@ -1,4 +1,12 @@
-import { CATEGORY_LABELS, EXPENSE_CATEGORIES, formatMonthName, formatShortDate, type ExpenseCategory } from "@luxe-hair/shared";
+import {
+  CATEGORY_LABELS,
+  EXPENSE_CATEGORIES,
+  formatMonthName,
+  formatShortDate,
+  toISODate,
+  todayDate,
+  type ExpenseCategory,
+} from "@luxe-hair/shared";
 import { ActionLabel, PageBody, PageHeader } from "@/components/shell/page";
 import { Card, CardHeader, EmptyState, ModalLink, PillLink, PillRow, ProgressBar, SectionLabel, buttonClass } from "@/components/ui";
 import { api, unwrap } from "@/lib/api";
@@ -118,7 +126,7 @@ export default async function ExpensesPage({ searchParams }: { searchParams: Pro
           )}
         </Card>
       </PageBody>
-      <AddExpenseModal />
+      <AddExpenseModal today={toISODate(todayDate())} />
     </>
   );
 }

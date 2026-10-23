@@ -240,6 +240,8 @@ export const COMPANY_STATUS_LABELS: Record<CompanyStatus, string> = {
 const adminPassword = z.string().min(8, "At least 8 characters.").max(200);
 
 export const companyInviteSchema = z.object({
+  // Defaults to today when omitted.
+  date: isoDate.optional(),
   name: z.string().trim().min(1, "Enter the company name.").max(120),
   city: optionalText(80),
   ownerName: z.string().trim().min(1, "Enter the owner's name.").max(160),

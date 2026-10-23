@@ -9,6 +9,7 @@ export async function createExpense(_: ActionState, formData: FormData): Promise
     amount: formData.get("amount"),
     category: formData.get("category"),
     description: formData.get("description"),
+    date: formData.get("date") || undefined,
     repeatsMonthly: formData.get("repeatsMonthly") ?? undefined,
   });
   if (!parsed.success) return fail(firstIssue(parsed.error, "Enter an amount, a category and a description."));
@@ -18,6 +19,7 @@ export async function createExpense(_: ActionState, formData: FormData): Promise
     amount: String(parsed.data.amount),
     category: parsed.data.category,
     description: parsed.data.description,
+    ...(parsed.data.date ? { date: parsed.data.date } : {}),
     repeatsMonthly: parsed.data.repeatsMonthly ? ("true" as const) : ("false" as const),
     ...(receipt instanceof File && receipt.size > 0 ? { receipt } : {}),
   };

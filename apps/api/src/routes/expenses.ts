@@ -5,6 +5,7 @@ import {
   expenseCreateSchema,
   idParamSchema,
   monthStart,
+  parseISODate,
   todayDate,
 } from "@luxe-hair/shared";
 import { Hono } from "hono";
@@ -81,6 +82,9 @@ export const expenseRoutes = new Hono<AppEnv>()
   .post("/", validate("form", expenseCreateSchema), async (c) => {
     const companyId = c.get("companyId");
     const input = c.req.valid("form");
+    const today = todayDate();
+    const date = input.date ? parseISODate(input.date) : today;
+    if (date > today) throw new HTTPException(400, { message: "The date can't be in the future." });
     const body = await c.req.parseBody();
     const file = body["receipt"];
     const receiptPath = file instanceof File && file.size > 0 ? await saveReceipt(companyId, file) : null;
@@ -94,7 +98,7 @@ export const expenseRoutes = new Hono<AppEnv>()
       return tx.expense.create({
         data: {
           companyId,
-          date: todayDate(),
+          date,
           description: input.description,
           category: input.category,
           amount: input.amount,

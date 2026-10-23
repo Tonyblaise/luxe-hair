@@ -5,15 +5,15 @@ import { useActionState, useRef, useState } from "react";
 import { Button, Checkbox, Field, FormError, Modal, SelectField, useActionFeedback, useCloseModal } from "@/components/ui";
 import { createExpense } from "./actions";
 
-export function AddExpenseModal() {
+export function AddExpenseModal({ today }: { today: string }) {
   return (
     <Modal id="add-expense" title="Add Expense">
-      <AddExpenseForm />
+      <AddExpenseForm today={today} />
     </Modal>
   );
 }
 
-function AddExpenseForm() {
+function AddExpenseForm({ today }: { today: string }) {
   const close = useCloseModal();
   const [state, action, pending] = useActionState(createExpense, undefined);
   useActionFeedback(state, close);
@@ -33,6 +33,7 @@ function AddExpenseForm() {
           ))}
         </SelectField>
       </div>
+      <Field label="Date" name="date" type="date" required defaultValue={today} max={today} />
       <Field label="Vendor or description" name="description" required placeholder="e.g. Kerra Lab color order" />
       <input
         ref={fileRef}

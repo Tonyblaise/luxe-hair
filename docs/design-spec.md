@@ -117,7 +117,7 @@ Money: `KES 12,345`; charts short form `KES 40k` / `KES 1.2M`.
 ### Expenses
 - "{Month} by Category": total 20/700 right; category bars; section "RECURRING · AUTO-ADDED ON THE 1ST": vendor + "KES x/mo".
 - "Expense Log": pills All + 5 categories. Desktop rows (min-width 620): date "Oct 14" | vendor 600 (+ "Recurring monthly") | category | "Receipt attached" / "—" | amount right. Mobile: vendor over "Oct 14 · Category", amount 15/700, "Receipt".
-- Add modal: Amount + Category (two columns), "Vendor or description" (placeholder "e.g. Kerra Lab color order"), compact outline receipt button "Snap or Attach Receipt" (natural width, left-aligned) (`accept=image/* capture=environment`, then "Receipt: filename"), "Repeats monthly" checkbox, button "Add Expense". Toast "Expense added · KES x".
+- Add modal: Amount + Category (two columns), Date (defaults to today, no future dates), "Vendor or description" (placeholder "e.g. Kerra Lab color order"), compact outline receipt button "Snap or Attach Receipt" (natural width, left-aligned) (`accept=image/* capture=environment`, then "Receipt: filename"), "Repeats monthly" checkbox, button "Add Expense". Toast "Expense added · KES x".
 
 ### Inventory
 - Alert banner when low: navy card radius 16 padding `20px 24px`, yellow bolt 22px, "N products below reorder level" 16/600, names white/72%, cyan "Show Low Stock" button.
