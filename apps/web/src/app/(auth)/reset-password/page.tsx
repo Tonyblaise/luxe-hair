@@ -12,7 +12,10 @@ export default async function ResetPasswordPage({ searchParams }: { searchParams
     return (
       <div className="flex flex-col gap-3">
         <h1 className="text-[22px] leading-tight font-semibold">Link not valid</h1>
-        <p className="text-sm text-gray-600">This reset link is invalid or has expired. Ask for a new one.</p>
+        <p className="text-sm text-gray-600">This reset link is invalid or has expired. Request a new one.</p>
+        <Link href="/forgot-password" className="text-sm font-medium text-cyan-600 hover:underline">
+          Request a new link
+        </Link>
         <Link href="/login" className="text-sm font-medium text-cyan-600 hover:underline">
           Go to sign in
         </Link>

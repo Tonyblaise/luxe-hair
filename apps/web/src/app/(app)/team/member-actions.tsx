@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { CopyLink } from "@/components/copy-link";
+import { SentLink } from "@/components/copy-link";
 import { Button, useActionFeedback } from "@/components/ui";
 import { removeMember, resendInvite } from "./actions";
 
@@ -47,7 +47,12 @@ export function MemberActions({ id, name, invited }: { id: string; name: string;
       </div>
       {resent?.ok && resent.data?.url && (
         <div className="col-span-3">
-          <CopyLink url={resent.data.url} note="New link (older links no longer work):" />
+          <SentLink
+            emailed={!!resent.data.emailed}
+            email={resent.data.email ?? ""}
+            url={resent.data.url}
+            note="New link (older links no longer work):"
+          />
         </div>
       )}
     </>

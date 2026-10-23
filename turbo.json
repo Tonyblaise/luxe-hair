@@ -1,21 +1,46 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "ui": "stream",
-  "globalDependencies": [".nvmrc"],
+  "globalDependencies": [
+    ".nvmrc"
+  ],
   "tasks": {
     "generate": {
       "cache": false
     },
     "build": {
-      "dependsOn": ["^build", "^generate"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "dependsOn": [
+        "^build",
+        "^generate"
+      ],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**"
+      ]
     },
     "typecheck": {
-      "dependsOn": ["^generate"],
+      "dependsOn": [
+        "^generate"
+      ],
       "outputs": []
     },
     "dev": {
-      "dependsOn": ["^generate"],
+      "dependsOn": [
+        "^generate"
+      ],
+      "cache": false,
+      "persistent": true
+    },
+    "deploy": {
+      "dependsOn": [
+        "^generate"
+      ],
+      "cache": false
+    },
+    "preview": {
+      "dependsOn": [
+        "^generate"
+      ],
       "cache": false,
       "persistent": true
     }

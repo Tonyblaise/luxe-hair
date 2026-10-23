@@ -3,6 +3,7 @@
 Extracted from Claude Design project `6a35e124-e709-4a43-8cef-d171b03560bc`, file `Salon Manager.dc.html` (one responsive app; `Salon Manager Mobile.dc.html` only shows it in 390px phone frames). Design system: "Focus Digital" (`colors_and_type.css`).
 
 Project decisions that override the design:
+- The product is called Luxe Hair: wherever the design shows "Salon Manager" as the brand (logos, sidebar label, page titles, footers, the suspended-account notice), the app shows "Luxe Hair".
 - Employee has no email, start date or working hours (schema doc wins), and no job role: employees are described by the services they perform (picked when adding them).
 - Payment methods are Card / Cash / M-Pesa (design says Other).
 - The salon nav is grouped, with divider lines between groups — Overview (Dashboard, Reports), Operations (Sales Log, Payouts, Expenses, Inventory), Work (Tasks, Services), People (Employees, Team) — instead of the design's flat list.
@@ -49,7 +50,7 @@ Responsive sizes via clamp: card padding `clamp(16px,4vw,24px)`, page h1 `clamp(
 
 ## Shell
 
-- **Wide ≥ 900**: grid `232px | 1fr`, 100vh, aside and main scroll independently. Sidebar navy-800, padding `24px 16px`, gap 32. Logo block: bolt tile + "Luxe Hair" 17/700 white over "Salon Manager" 12px white/72%. Nav buttons h44, px14, radius 10, 15px; inactive transparent white/72% 500; active navy-700 bg, white 600, `box-shadow: inset 3px 0 0 #F4CB45`. Badges: pill h22, 12/600 navy text — Tasks cyan-400 (open tasks due ≤ today), Inventory yellow-400 (low-stock count). Footer (margin-top auto, border-top navy-700): 36px cyan avatar initials, name, "Account Settings →".
+- **Wide ≥ 900**: grid `232px | 1fr`, 100vh, aside and main scroll independently. Sidebar navy-800, padding `24px 16px`, gap 32. Logo block: bolt tile + salon name (e.g. "Luxe Hair") 17/700 white over the product name 12px white/72%. Nav buttons h44, px14, radius 10, 15px; inactive transparent white/72% 500; active navy-700 bg, white 600, `box-shadow: inset 3px 0 0 #F4CB45`. Badges: pill h22, 12/600 navy text — Tasks cyan-400 (open tasks due ≤ today), Inventory yellow-400 (low-stock count). Footer (margin-top auto, border-top navy-700): 36px cyan avatar initials, name, "Account Settings →".
 - **Tablet 640–899**: sidebar becomes sticky top bar (padding `16px 12px 12px`), nav scrolls horizontally, extra "Account" item, footer hidden.
 - **Mobile < 640**: aside hidden. Sticky header min-h 64 with hamburger (44×44, 1px gray-300, radius 10, three 18×2 navy bars) → left drawer `min(300px,84vw)` navy with logo, "×", nav, footer; backdrop rgba(15,23,42,.4). Navigating closes it. No bottom tab bar.
 - **Header**: white, border-bottom gray-200, min-h 80 (64 mobile), padding `12px 32px` (wide) / `12px 16px`. Left: eyebrow date "WEDNESDAY, OCTOBER 14" (`clamp(11px,3vw,13px)` uppercase gray-500) over h1 title. Right: one primary action (mobile shortens to "+ Add" / "+ Invite" / "Pay All").

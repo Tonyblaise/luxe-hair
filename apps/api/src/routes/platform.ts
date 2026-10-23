@@ -14,7 +14,7 @@ import {
 import bcrypt from "bcryptjs";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { env } from "../env";
+import { companyInviteEmail, emailBrand, resetEmail, sendEmail, sendLater } from "../lib/email";
 import {
   issueAdminResetToken,
   issueInviteToken,
@@ -25,12 +25,12 @@ import {
   verifyToken,
   waitUntil,
 } from "../lib/jwt";
+import { DUMMY_HASH } from "../lib/password";
 import { getSettings } from "../lib/settings";
 import { removeCompanyUploads } from "../lib/uploads";
 import { validate } from "../lib/validate";
 import { requirePlatformAdmin, type PlatformEnv } from "../middleware/platform";
 
-const DUMMY_HASH = bcrypt.hashSync("not-a-real-password", 10);
 const DAY_MS = 86_400_000;
 
 const notFound = () => new HTTPException(404, { message: "Company not found" });
@@ -67,11 +67,14 @@ export const platformRoutes = new Hono<PlatformEnv>()
   })
 
   .post("/auth/forgot", validate("json", emailOnlySchema), async (c) => {
-    const admin = await prisma.platformAdmin.findUnique({ where: { email: c.req.valid("json").email } });
+    const [admin, settings] = await Promise.all([
+      prisma.platformAdmin.findUnique({ where: { email: c.req.valid("json").email } }),
+      getSettings(),
+    ]);
     if (admin) {
-      const link = `${env.webOrigin}/admin/reset?token=${await issueAdminResetToken(admin.id)}`;
-      // No email service yet: the link only reaches the API console, and never in production.
-      if (process.env.NODE_ENV !== "production") console.log(`[admin reset] ${admin.email}: ${link}`);
+      const firstName = admin.name.split(/\s+/)[0] || admin.name;
+      // After the response, so its timing can't reveal whether the admin exists.
+      sendLater(c, resetEmail(emailBrand(settings), admin.email, await issueAdminResetToken(admin.id), { firstName }));
     }
     // Same answer either way, so the form can't be used to discover admin emails.
     return c.json({ ok: true });
@@ -205,7 +208,11 @@ export const platformRoutes = new Hono<PlatformEnv>()
       });
       return user;
     });
-    return c.json({ token: await issueInviteToken({ ...owner, role: "owner" }, settings.inviteDays) }, 201);
+    const token = await issueInviteToken({ ...owner, role: "owner" }, settings.inviteDays);
+    const emailed = await sendEmail(
+      companyInviteEmail(emailBrand(settings), owner.email, token, { firstName, company: input.name, days: settings.inviteDays }),
+    );
+    return c.json({ token, emailed }, 201);
   })
 
   .patch("/companies/:id", requirePlatformAdmin, validate("param", idParamSchema), validate("json", companyPlanSchema), async (c) => {
@@ -227,7 +234,15 @@ export const platformRoutes = new Hono<PlatformEnv>()
       prisma.teamMember.update({ where: { userId: user.id }, data: { invitedDate: todayDate() } }),
     ]);
     await waitUntil(user.tokensValidAfter);
-    return c.json({ token: await issueInviteToken({ ...user, role: "owner" }, settings.inviteDays), email: user.email });
+    const token = await issueInviteToken({ ...user, role: "owner" }, settings.inviteDays);
+    const emailed = await sendEmail(
+      companyInviteEmail(emailBrand(settings), user.email, token, {
+        firstName: company.admin.teamMember?.firstName ?? "there",
+        company: company.name,
+        days: settings.inviteDays,
+      }),
+    );
+    return c.json({ token, emailed, email: user.email });
   })
 
   .post("/companies/:id/revoke", requirePlatformAdmin, validate("param", idParamSchema), async (c) => {
@@ -263,14 +278,18 @@ export const platformRoutes = new Hono<PlatformEnv>()
     if (company.status !== "active" && company.status !== "trial") throw wrongStatus("The company must be active or on trial.");
     const owner = company.admin;
     if (!owner || owner.deletedAt || owner.teamMember?.status !== "active") throw wrongStatus("This company's owner hasn't joined yet.");
-    return c.json({ token: await issueResetToken({ ...owner, role: "owner" }), email: owner.email, owner: ownerName(company) });
+    const token = await issueResetToken({ ...owner, role: "owner" });
+    const emailed = await sendEmail(
+      resetEmail(emailBrand(await getSettings()), owner.email, token, { firstName: owner.teamMember.firstName, company: company.name }),
+    );
+    return c.json({ token, emailed, email: owner.email, owner: ownerName(company) });
   })
 
   .delete("/companies/:id", requirePlatformAdmin, validate("param", idParamSchema), async (c) => {
     const company = await findCompany(c.req.valid("param").id);
     if (company.status !== "suspended") throw wrongStatus("Suspend the company before deleting it.");
     await prisma.$transaction((tx) => deleteCompanyData(tx, company.id), { timeout: 60_000 });
-    await removeCompanyUploads(company.id);
+    await removeCompanyUploads(c.env.RECEIPTS, company.id);
     return c.json({ name: company.name });
   })
 

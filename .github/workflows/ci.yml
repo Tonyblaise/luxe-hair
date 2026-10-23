@@ -1,0 +1,68 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  check:
+    name: Typecheck and build
+    runs-on: ubuntu-latest
+    env:
+      # prisma.config.ts requires a URL even for `prisma generate`; nothing connects to it here.
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+
+  deploy:
+    name: Migrate and deploy
+    needs: check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    environment: production
+    # One deploy at a time; a newer push waits rather than racing a migration.
+    concurrency:
+      group: production
+      cancel-in-progress: false
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      # Railway's public Postgres URL (DATABASE_PUBLIC_URL), for migrations only; the Worker uses Hyperdrive.
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      # Wrangler wants a local Hyperdrive URL while building; the deployed Worker uses the real binding.
+      CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE: postgresql://ci:ci@localhost:5432/ci
+    steps:
+      - name: Check deploy secrets
+        run: |
+          missing=""
+          for name in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID DATABASE_URL; do
+            [ -n "${!name}" ] || missing="$missing $name"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Add these repository secrets to deploy:$missing (see docs/deploy.md)"
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Apply database migrations
+        run: npx prisma migrate deploy
+        working-directory: packages/db
+      - name: Deploy the Worker
+        run: npm run deploy

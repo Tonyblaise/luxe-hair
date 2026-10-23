@@ -13,13 +13,22 @@ export async function inviteCompany(_: ActionState, formData: FormData): Promise
   if (!parsed.success) return fail(firstIssue(parsed.error));
   const client = await adminApi();
   let url = "";
+  let emailed = false;
   const result = await mutate(
     async () => {
-      url = await inviteLink((await adminUnwrap(await client.companies.$post({ json: parsed.data }))).token);
+      const res = await adminUnwrap(await client.companies.$post({ json: parsed.data }));
+      url = await inviteLink(res.token);
+      emailed = res.emailed;
     },
-    { toast: `Invite sent to ${parsed.data.ownerName} at ${parsed.data.ownerEmail}`, revalidate: ["/admin"] },
+    {
+      toast: () =>
+        emailed
+          ? `Invite sent to ${parsed.data.ownerName} at ${parsed.data.ownerEmail}`
+          : `Invite created for ${parsed.data.ownerName} at ${parsed.data.ownerEmail}`,
+      revalidate: ["/admin"],
+    },
   );
-  return result?.ok ? { ...result, data: { url } } : result;
+  return result?.ok ? { ...result, data: { url, emailed: emailed ? "1" : "" } } : result;
 }
 
 export async function changePlan(id: string, planId: string, planName: string, companyName: string): Promise<ActionState> {
@@ -37,15 +46,22 @@ export async function companyAction(id: string, action: CompanyAction, name: str
   const c = client.companies[":id"];
   const param = { param: { id } };
   let url = "";
+  let emailed = false;
   const result = await mutate(
     async () => {
       switch (action) {
-        case "resend":
-          url = await inviteLink((await adminUnwrap(await c.resend.$post(param))).token);
+        case "resend": {
+          const res = await adminUnwrap(await c.resend.$post(param));
+          url = await inviteLink(res.token);
+          emailed = res.emailed;
           return;
-        case "reset-owner-password":
-          url = await resetLink((await adminUnwrap(await c["reset-owner-password"].$post(param))).token);
+        }
+        case "reset-owner-password": {
+          const res = await adminUnwrap(await c["reset-owner-password"].$post(param));
+          url = await resetLink(res.token);
+          emailed = res.emailed;
           return;
+        }
         case "revoke":
           return adminUnwrap(await c.revoke.$post(param));
         case "suspend":
@@ -57,16 +73,17 @@ export async function companyAction(id: string, action: CompanyAction, name: str
       }
     },
     {
-      toast: {
-        resend: `Invite resent to ${email}`,
-        "reset-owner-password": `Reset link ready for ${email}`,
-        revoke: `Invite to ${name} revoked`,
-        suspend: `${name} suspended`,
-        reactivate: `${name} reactivated`,
-        delete: `${name} deleted`,
-      }[action],
+      toast: () =>
+        ({
+          resend: emailed ? `Invite resent to ${email}` : `New invite link for ${email}`,
+          "reset-owner-password": emailed ? `Reset link sent to ${email}` : `Reset link ready for ${email}`,
+          revoke: `Invite to ${name} revoked`,
+          suspend: `${name} suspended`,
+          reactivate: `${name} reactivated`,
+          delete: `${name} deleted`,
+        })[action],
       revalidate: ["/admin"],
     },
   );
-  return result?.ok && url ? { ...result, data: { url } } : result;
+  return result?.ok && url ? { ...result, data: { url, emailed: emailed ? "1" : "" } } : result;
 }

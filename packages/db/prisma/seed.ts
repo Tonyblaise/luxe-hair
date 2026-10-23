@@ -9,7 +9,8 @@ import {
   WEEKDAYS,
 } from "@luxe-hair/shared";
 import bcrypt from "bcryptjs";
-import { deleteCompanyData, prisma, type Prisma } from "../src/index";
+import { deleteCompanyData } from "../src/company";
+import { prisma, type Prisma } from "../src/node";
 
 const OWNER_EMAIL = "owner@luxehair.test";
 const HISTORY_MONTHS = 11;

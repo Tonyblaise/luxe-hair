@@ -5,8 +5,9 @@ Extracted from Claude Design project `6a35e124-e709-4a43-8cef-d171b03560bc`, fil
 **Purpose:** a platform super-admin console across all salons — "Admin Console — Run every salon from **one place**." / "Invite companies, manage plans and keep accounts in good standing." The user is a "Platform Admin" (separate from salon users). Lives at `/admin` in the web app.
 
 Project decisions that override the design:
+- The product is called Luxe Hair: the design's "Salon Manager" logo text and © line read "Luxe Hair", and so does the default platform name in Settings.
 - The design is desktop-only (`min-width:1280px`). We keep its desktop layout and make it degrade like the main app (top nav below 900px, scrolling table, stacked grids) instead of forcing horizontal scroll.
-- No email service: invite and reset-owner-password actions show a copyable link (as Team does). Admin "Forgot password" logs the reset link to the API console in development.
+- Invites, resends, reset-owner-password and admin "Forgot password" are emailed through Resend. The invite and reset dialogs confirm "Sent to {email}" with the link behind "Copy link instead"; when the email isn't sent (no `RESEND_API_KEY`, or Resend refuses it) they show the copyable link as before, and in development the link is logged to the console.
 - Password rule for the admin is "at least 8 characters" (the design's rule).
 - The design's demo hint under Sign In is dropped.
 

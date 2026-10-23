@@ -12,27 +12,33 @@ export async function inviteMember(_: ActionState, formData: FormData): Promise<
   if (!parsed.success) return fail(firstIssue(parsed.error, "Enter a name, an email and a role."));
   const client = await api();
   let url = "";
+  let emailed = false;
   const result = await mutate(
     async () => {
-      const { token } = await unwrap(await client.team.invite.$post({ json: parsed.data }));
-      url = await inviteUrl(token);
+      const res = await unwrap(await client.team.invite.$post({ json: parsed.data }));
+      url = await inviteUrl(res.token);
+      emailed = res.emailed;
     },
-    { toast: `Invite created for ${parsed.data.email}` },
+    { toast: () => (emailed ? `Invite sent to ${parsed.data.email}` : `Invite created for ${parsed.data.email}`) },
   );
-  return result?.ok ? { ...result, data: { url } } : result;
+  return result?.ok ? { ...result, data: { url, email: parsed.data.email, emailed: emailed ? "1" : "" } } : result;
 }
 
 export async function resendInvite(id: string, name: string, _: ActionState): Promise<ActionState> {
   const client = await api();
   let url = "";
+  let email = "";
+  let emailed = false;
   const result = await mutate(
     async () => {
-      const { token } = await unwrap(await client.team[":id"].resend.$post({ param: { id } }));
-      url = await inviteUrl(token);
+      const res = await unwrap(await client.team[":id"].resend.$post({ param: { id } }));
+      url = await inviteUrl(res.token);
+      email = res.email;
+      emailed = res.emailed;
     },
-    { toast: `New invite link for ${name}` },
+    { toast: () => (emailed ? `Invite resent to ${email}` : `New invite link for ${name}`) },
   );
-  return result?.ok ? { ...result, data: { url } } : result;
+  return result?.ok ? { ...result, data: { url, email, emailed: emailed ? "1" : "" } } : result;
 }
 
 export async function removeMember(id: string, toast: string, _: ActionState): Promise<ActionState> {

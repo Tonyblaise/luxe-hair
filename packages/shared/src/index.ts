@@ -3,6 +3,9 @@ import { z } from "zod";
 export * from "./dates";
 export * from "./money";
 
+/** Self-serve salon sign-up. Off for now: salons join through an admin invite. */
+export const SIGNUP_OPEN = false;
+
 // ---------------------------------------------------------------- enums + labels
 
 export const TEAM_ROLES = ["owner", "manager", "front_desk", "accountant"] as const;

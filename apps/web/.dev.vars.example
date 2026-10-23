@@ -1,0 +1,7 @@
+# Local Worker secrets and vars (git-ignored copy: .dev.vars). Production: `wrangler secret put JWT_SECRET`, `RESEND_API_KEY`.
+JWT_SECRET="generate-with: openssl rand -hex 32"
+WEB_ORIGIN="http://localhost:3000"
+# Resend (https://resend.com/api-keys). Without a key, emails are logged to the console instead. Production: `wrangler secret put RESEND_API_KEY`.
+RESEND_API_KEY="re_..."
+# Optional locally (production sets it in wrangler.jsonc vars); the domain must be verified in Resend.
+# EMAIL_FROM="Luxe Hair <no-reply@YOUR_DOMAIN>"

@@ -6,7 +6,7 @@ function Logo() {
       <span className="grid size-9 place-items-center rounded-md bg-navy-700">
         <Bolt size={22} />
       </span>
-      <span className="text-[17px] font-bold text-white">Salon Manager</span>
+      <span className="text-[17px] font-bold text-white">Luxe Hair</span>
     </span>
   );
 }
@@ -23,7 +23,7 @@ export default function AdminAuthLayout({ children }: { children: React.ReactNod
           </h1>
           <p className="text-lg text-white/72">Invite companies, manage plans and keep accounts in good standing.</p>
         </div>
-        <p className="text-sm text-white/60">© {new Date().getFullYear()} Salon Manager</p>
+        <p className="text-sm text-white/60">© {new Date().getFullYear()} Luxe Hair</p>
       </aside>
 
       <div className="flex flex-col">

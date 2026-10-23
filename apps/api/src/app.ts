@@ -1,9 +1,8 @@
 import { Hono } from "hono";
-import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { logger } from "hono/logger";
 import { secureHeaders } from "hono/secure-headers";
-import { env } from "./env";
+import { withPrisma } from "@luxe-hair/db";
 import { appointmentRoutes } from "./routes/appointments";
 import { authRoutes } from "./routes/auth";
 import { dashboardRoutes } from "./routes/dashboard";
@@ -18,6 +17,7 @@ import { saleRoutes } from "./routes/sales";
 import { serviceRoutes } from "./routes/services";
 import { taskRoutes } from "./routes/tasks";
 import { teamRoutes } from "./routes/team";
+import { withBindings } from "./env";
 import type { AppEnv } from "./types";
 
 const PRISMA_ERRORS: Record<string, [409, string]> = {
@@ -28,7 +28,8 @@ const PRISMA_ERRORS: Record<string, [409, string]> = {
 export const app = new Hono<AppEnv>()
   .use(logger())
   .use(secureHeaders())
-  .use(cors({ origin: env.webOrigin, credentials: true }))
+  // Per request: bindings for `env`, and a database client of its own (see withPrisma).
+  .use((c, next) => withBindings(c.env, () => withPrisma(c.env.HYPERDRIVE.connectionString, next)))
   .get("/health", (c) => c.json({ ok: true }))
   .route("/auth", authRoutes)
   .route("/meta", metaRoutes)

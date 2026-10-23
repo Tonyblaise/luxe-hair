@@ -1,6 +1,14 @@
+// The app runs on Cloudflare Workers, which can't compile WebAssembly from bytes at runtime.
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
+  runtime  = "workerd"
+}
+
+// Seed and other scripts run in Node, which can't import the workerd client's .wasm module.
+generator nodeClient {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma-node"
 }
 
 datasource db {
@@ -110,7 +118,7 @@ model Plan {
 /// Single row (id = 1).
 model PlatformSettings {
   id             Int      @id @default(1)
-  platformName   String   @default("Salon Manager") @map("platform_name")
+  platformName   String   @default("Luxe Hair") @map("platform_name")
   supportEmail   String   @default("") @map("support_email")
   supportPhone   String   @default("") @map("support_phone")
   trialDays      Int      @default(14) @map("trial_days")

@@ -9,3 +9,8 @@ next-env.d.ts
 packages/db/src/generated
 .DS_Store
 apps/api/uploads
+
+# Cloudflare
+.open-next
+.wrangler
+.dev.vars

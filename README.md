@@ -2,13 +2,15 @@
 
 Salon manager: dashboard, sales log, services, reports, tasks, employees, team, payouts, expenses and inventory. One responsive app (desktop sidebar, tablet top bar, phone drawer) built from the Claude Design "Salon Manager" file; see `docs/design-spec.md`.
 
+It deploys as a single Cloudflare Worker: Next.js through the OpenNext adapter, with the Hono API running in-process. Postgres is on Railway (reached through Hyperdrive) and receipt photos are in R2. See `docs/deploy.md`.
+
 npm workspaces + Turborepo monorepo:
 
 | Path | What |
 | --- | --- |
-| `apps/api` | Hono API on port 4000 (JWT auth, company-scoped routes, receipt uploads) |
-| `apps/web` | Next.js 16 app on port 3000 |
-| `packages/db` | Prisma 7 schema, migrations, seed, configured client |
+| `apps/api` | Hono API (JWT auth, company-scoped routes, R2 receipts), called in-process by the web app |
+| `apps/web` | Next.js 16 app and the Worker config (`wrangler.jsonc`) |
+| `packages/db` | Prisma 7 schema, migrations, seed, per-request client |
 | `packages/shared` | Zod schemas, labels, date and money helpers shared by everything |
 | `docs/design-spec.md` | Design tokens, components and per-screen spec |
 | `docs/admin-spec.md` | Platform admin console spec (`/admin`) |
@@ -21,11 +23,11 @@ Needs Node 22 and a local Postgres.
 npm install
 createdb luxe_hair
 cp packages/db/.env.example packages/db/.env   # set DATABASE_URL, SEED_OWNER_PASSWORD and SEED_ADMIN_PASSWORD
-cp apps/api/.env.example apps/api/.env         # set DATABASE_URL and JWT_SECRET (openssl rand -hex 32)
-cp apps/web/.env.example apps/web/.env.local
+cp apps/web/.env.example apps/web/.env         # local Postgres URL for the Hyperdrive binding (not secret)
+cp apps/web/.dev.vars.example apps/web/.dev.vars   # JWT_SECRET (openssl rand -hex 32), RESEND_API_KEY; secrets live here, never in .env
 npm run db:migrate
 npm run db:seed
-npm run dev                                    # api :4000 + web :3000
+npm run dev                                    # web :3000, with local R2 and Hyperdrive from wrangler
 ```
 
 `db:seed` wipes and rebuilds the Luxe Hair salon with about 12 months of sales, expenses and payouts, plus the platform data: three plans, settings, eight sample salons in every status, and a platform admin. Sign in to the salon app as `owner@luxehair.test`; the managers and front desk (`daniel@`, `mia@`, `ruth@luxehair.test`) use the same `SEED_OWNER_PASSWORD`. Sign in to the admin console at `/admin` as `admin@salonmanager.test` with `SEED_ADMIN_PASSWORD`.
@@ -36,7 +38,7 @@ npm run dev                                    # api :4000 + web :3000
 
 ## Scripts
 
-`npm run dev` · `build` · `typecheck` · `db:migrate` · `db:seed` · `db:studio` · `db:generate`
+`npm run dev` · `build` · `typecheck` · `preview` (built Worker in local workerd, :8787) · `deploy` · `db:migrate` · `db:seed` · `db:studio` · `db:generate`
 
 ## How auth works
 
@@ -45,7 +47,8 @@ npm run dev                                    # api :4000 + web :3000
 - Moving `tokens_valid_after` forward signs a user out everywhere: sign out everywhere, password change (this device gets a fresh token), and removal from the team.
 - Team invites are 7-day single-use links (`/accept-invite?token=…`). There's no email service yet, so the app shows the link to copy and send.
 - Every query takes `companyId` from the verified token, never from the request.
-- The web app keeps the token in an httpOnly cookie and calls the API only from the server, through a typed Hono client (`apps/web/src/lib/api.ts`).
+- The web app keeps the token in an httpOnly cookie and calls the API only from the server, through a typed Hono client (`apps/web/src/lib/api.ts`) that runs the Hono app in-process, so the API has no public URL.
+- `/admin` is for platform admins only: the proxy verifies the `lh_admin` token's signature and purpose before any admin page or action runs, and every `/platform` API route re-checks it (including revocation).
 
 ## Adding a screen
 

@@ -96,7 +96,7 @@ function Logo({ companyName }: { companyName: string }) {
       </span>
       <span className="flex min-w-0 flex-col leading-tight">
         <span className="truncate text-[17px] font-bold text-white">{companyName}</span>
-        <span className="text-xs text-white/72">Salon Manager</span>
+        <span className="text-xs text-white/72">Luxe Hair</span>
       </span>
     </Link>
   );

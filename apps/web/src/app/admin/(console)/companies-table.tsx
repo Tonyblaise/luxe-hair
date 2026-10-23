@@ -175,7 +175,7 @@ function PlanSelect({ row, plans }: { row: CompanyRow; plans: PlanOption[] }) {
 function ManageMenu({ row }: { row: CompanyRow }) {
   const toast = useToast();
   const [pending, startTransition] = useTransition();
-  const [link, setLink] = useState<{ title: string; note: string; url: string } | null>(null);
+  const [link, setLink] = useState<{ title: string; note: string; url: string; emailed: boolean } | null>(null);
 
   const run = (action: Parameters<typeof companyAction>[1], confirmText?: string) => () => {
     if (confirmText && !confirm(confirmText)) return;
@@ -183,11 +183,14 @@ function ManageMenu({ row }: { row: CompanyRow }) {
       const result = await companyAction(row.id, action, row.name, row.owner.email);
       toast(result?.error ?? result?.toast ?? "Done");
       const url = result?.data?.url;
+      const emailed = !!result?.data?.emailed;
       if (url && action === "resend") {
-        setLink({ title: "Invite Link", note: `Send this to ${row.owner.name}. Older links no longer work.`, url });
+        const note = `Send this to ${row.owner.name}. Older links no longer work.`;
+        setLink({ title: emailed ? "Invite Sent" : "Invite Link", note, url, emailed });
       }
       if (url && action === "reset-owner-password") {
-        setLink({ title: "Password Reset Link", note: `Send this to ${row.owner.name}. It works once and expires in 1 hour.`, url });
+        const note = `Send this to ${row.owner.name}. It works once and expires in 1 hour.`;
+        setLink({ title: emailed ? "Reset Link Sent" : "Password Reset Link", note, url, emailed });
       }
     });
   };
@@ -215,7 +218,7 @@ function ManageMenu({ row }: { row: CompanyRow }) {
   return (
     <>
       <Menu label={pending ? "Working…" : "Manage"} items={items} disabled={pending} />
-      {link && <LinkDialog {...link} onClose={() => setLink(null)} />}
+      {link && <LinkDialog {...link} email={row.owner.email} onClose={() => setLink(null)} />}
     </>
   );
 }

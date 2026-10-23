@@ -1,11 +1,34 @@
 import { prisma } from "@luxe-hair/db";
-import { idParamSchema, inviteSchema, todayDate } from "@luxe-hair/shared";
+import { TEAM_ROLE_LABELS, idParamSchema, inviteSchema, todayDate, type TeamRole } from "@luxe-hair/shared";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
+import { emailBrand, sendEmail, teamInviteEmail } from "../lib/email";
 import { issueInviteToken, nextSecond, waitUntil } from "../lib/jwt";
+import { getSettings } from "../lib/settings";
 import { validate } from "../lib/validate";
 import { requireAuth, requireManager } from "../middleware/auth";
 import type { AppEnv } from "../types";
+
+/** Team invite links last this long (issueInviteToken's default). */
+const INVITE_DAYS = 7;
+
+/** Emails an invite link; returns whether it was sent (the web app shows the link to copy either way). */
+async function emailInvite(inviterId: string, companyId: string, to: string, token: string, invitee: { firstName: string; role: TeamRole }) {
+  const [inviter, company, settings] = await Promise.all([
+    prisma.teamMember.findUnique({ where: { userId: inviterId } }),
+    prisma.company.findUniqueOrThrow({ where: { id: companyId } }),
+    getSettings(),
+  ]);
+  return sendEmail(
+    teamInviteEmail(emailBrand(settings), to, token, {
+      firstName: invitee.firstName,
+      inviter: inviter ? `${inviter.firstName} ${inviter.lastName}`.trim() : company.name,
+      company: company.name,
+      role: TEAM_ROLE_LABELS[invitee.role],
+      days: INVITE_DAYS,
+    }),
+  );
+}
 
 const notFound = () => new HTTPException(404, { message: "Team member not found" });
 
@@ -66,7 +89,9 @@ export const teamRoutes = new Hono<AppEnv>()
       return u;
     });
 
-    return c.json({ token: await issueInviteToken({ ...user, role: input.role }) }, 201);
+    const token = await issueInviteToken({ ...user, role: input.role }, INVITE_DAYS);
+    const emailed = await emailInvite(c.get("user").id, companyId, user.email, token, input);
+    return c.json({ token, emailed }, 201);
   })
 
   .post("/:id/resend", requireManager, validate("param", idParamSchema), async (c) => {
@@ -76,7 +101,9 @@ export const teamRoutes = new Hono<AppEnv>()
     const user = await prisma.user.update({ where: { id: member.userId }, data: { tokensValidAfter: nextSecond() } });
     await prisma.teamMember.update({ where: { id: member.id }, data: { invitedDate: todayDate() } });
     await waitUntil(user.tokensValidAfter);
-    return c.json({ token: await issueInviteToken({ ...user, role: member.role }) });
+    const token = await issueInviteToken({ ...user, role: member.role }, INVITE_DAYS);
+    const emailed = await emailInvite(c.get("user").id, c.get("companyId"), user.email, token, member);
+    return c.json({ token, emailed, email: user.email });
   })
 
   .delete("/:id", requireManager, validate("param", idParamSchema), async (c) => {

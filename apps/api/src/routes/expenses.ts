@@ -87,7 +87,7 @@ export const expenseRoutes = new Hono<AppEnv>()
     if (date > today) throw new HTTPException(400, { message: "The date can't be in the future." });
     const body = await c.req.parseBody();
     const file = body["receipt"];
-    const receiptPath = file instanceof File && file.size > 0 ? await saveReceipt(companyId, file) : null;
+    const receiptPath = file instanceof File && file.size > 0 ? await saveReceipt(c.env.RECEIPTS, companyId, file) : null;
 
     const expense = await prisma.$transaction(async (tx) => {
       const recurring = input.repeatsMonthly
@@ -117,6 +117,6 @@ export const expenseRoutes = new Hono<AppEnv>()
       where: { id: c.req.valid("param").id, companyId: c.get("companyId") },
     });
     if (!expense?.receiptPath) throw new HTTPException(404, { message: "Receipt not found" });
-    const { body, type } = await readReceipt(expense.receiptPath);
+    const { body, type } = await readReceipt(c.env.RECEIPTS, expense.receiptPath);
     return c.body(body, 200, { "Content-Type": type, "Cache-Control": "private, max-age=3600" });
   });

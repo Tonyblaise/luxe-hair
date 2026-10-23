@@ -2,8 +2,9 @@ import { prisma, type PlatformAdmin } from "@luxe-hair/db";
 import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
 import { issuedBefore, verifyToken, type TokenClaims } from "../lib/jwt";
+import type { Bindings } from "../types";
 
-export type PlatformEnv = { Variables: { admin: PlatformAdmin } };
+export type PlatformEnv = { Bindings: Bindings; Variables: { admin: PlatformAdmin } };
 
 const unauthorized = () => new HTTPException(401, { message: "Unauthorized" });
 

@@ -1,10 +1,11 @@
+import { SIGNUP_OPEN } from "@luxe-hair/shared";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Bolt } from "@/components/ui";
 import { FeatureIcon, type FeatureIconName } from "./icons";
 
 export const metadata: Metadata = {
-  title: "Salon Manager — sales, payouts and stock for Kenyan salons",
+  title: "Luxe Hair — sales, payouts and stock for Kenyan salons",
   description:
     "Log sales as they happen, pay commissions without a calculator, and track expenses and stock in one place.",
 };
@@ -102,7 +103,7 @@ function Hero() {
             <span className="grid size-9 place-items-center rounded-md bg-navy-700">
               <Bolt size={20} />
             </span>
-            <span className="text-lg font-bold">Salon Manager</span>
+            <span className="text-lg font-bold">Luxe Hair</span>
           </Link>
           <div className="flex flex-wrap items-center gap-[clamp(12px,3vw,32px)] text-sm">
             <a href="#features" className="font-medium hover:underline">
@@ -128,9 +129,7 @@ function Hero() {
               place. Prices in KES, built for how Kenyan salons run.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link href="/signup" className={`${ctaButton} px-6`}>
-                Start Free Trial
-              </Link>
+              <PrimaryCta className="px-6" />
               <a
                 href="#features"
                 className="inline-flex h-[52px] items-center justify-center rounded-md border border-white/40 px-6 text-base font-semibold whitespace-nowrap transition-ui hover:bg-navy-700"
@@ -138,7 +137,7 @@ function Hero() {
                 See Features
               </a>
             </div>
-            <p className="text-sm text-white/70">14-day free trial. No card needed.</p>
+            {SIGNUP_OPEN && <p className="text-sm text-white/70">14-day free trial. No card needed.</p>}
           </div>
           <DashboardMock />
         </div>
@@ -303,6 +302,21 @@ function Questions() {
   );
 }
 
+const SUPPORT_MAILTO = "mailto:support@salonmanager.co.ke";
+
+/** "Start Free Trial" while sign-up is open; otherwise salons join by invite, so it asks them to get in touch. */
+function PrimaryCta({ className }: { className: string }) {
+  return SIGNUP_OPEN ? (
+    <Link href="/signup" className={`${ctaButton} ${className}`}>
+      Start Free Trial
+    </Link>
+  ) : (
+    <a href={SUPPORT_MAILTO} className={`${ctaButton} ${className}`}>
+      Contact Us
+    </a>
+  );
+}
+
 function ClosingCta() {
   return (
     <footer className="bg-navy-800 text-white">
@@ -312,19 +326,19 @@ function ClosingCta() {
             <h2 className={h2}>
               Close the day knowing your <span className="text-yellow-400">numbers</span>.
             </h2>
-            <p className="text-[17px] text-white/85">Try every feature free for 14 days.</p>
+            <p className="text-[17px] text-white/85">
+              {SIGNUP_OPEN ? "Try every feature free for 14 days." : "Talk to us and we'll set up your salon."}
+            </p>
           </div>
-          <Link href="/signup" className={`${ctaButton} px-7`}>
-            Start Free Trial
-          </Link>
+          <PrimaryCta className="px-7" />
         </div>
         <div className="flex flex-wrap justify-between gap-4 border-t border-white/12 py-6 text-sm text-white/70">
-          <p>© {new Date().getFullYear()} Salon Manager · Nairobi, Kenya</p>
+          <p>© {new Date().getFullYear()} Luxe Hair · Nairobi, Kenya</p>
           <div className="flex gap-6 text-white/85">
             <a href="#features" className="hover:underline">
               Features
             </a>
-            <a href="mailto:support@salonmanager.co.ke" className="hover:underline">
+            <a href={SUPPORT_MAILTO} className="hover:underline">
               Contact
             </a>
           </div>

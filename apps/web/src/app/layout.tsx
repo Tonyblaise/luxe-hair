@@ -9,8 +9,8 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Salon Manager",
-  description: "Salon manager",
+  title: "Luxe Hair",
+  description: "Salon management for Kenyan salons",
 };
 
 export const viewport: Viewport = {

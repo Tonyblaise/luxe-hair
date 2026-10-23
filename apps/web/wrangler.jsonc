@@ -1,0 +1,30 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  // One Worker: Next.js (via OpenNext) with the Hono API running in-process.
+  "name": "luxe-hair",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-10-01",
+  // nodejs_compat: pg, AsyncLocalStorage and process.env (vars and secrets are copied into it).
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": { "enabled": true },
+  "vars": {
+    // Public origin, used in links the app hands out. Change it if you add a custom domain.
+    "WEB_ORIGIN": "https://luxe-hair.bubbablaise3.workers.dev",
+    // Sender for invite and reset emails; its domain is verified in Resend.
+    "EMAIL_FROM": "Luxe Hair <noreply@buildwithblaise.com>"
+  },
+  // Secrets (set with `wrangler secret put`, locally in .dev.vars): JWT_SECRET, RESEND_API_KEY.
+  "r2_buckets": [
+    // Expense receipt photos, keyed <companyId>/<uuid>.<ext>.
+    { "binding": "RECEIPTS", "bucket_name": "luxe-hair-receipts" }
+  ],
+  "hyperdrive": [
+    // Pools connections to the Railway Postgres. Locally, wrangler connects straight to
+    // CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE from .env.local instead.
+    { "binding": "HYPERDRIVE", "id": "25d8d935bd754582b41b00de3388d636" }
+  ]
+}

@@ -2,7 +2,7 @@
 
 import { INVITABLE_ROLES, TEAM_ROLE_LABELS } from "@luxe-hair/shared";
 import { useActionState, useState } from "react";
-import { CopyLink } from "@/components/copy-link";
+import { SentLink } from "@/components/copy-link";
 import { Button, Field, FormError, Modal, SelectField, useActionFeedback, useCloseModal } from "@/components/ui";
 import { inviteMember } from "./actions";
 
@@ -29,7 +29,12 @@ function InviteForm() {
   if (state?.ok && state.data?.url) {
     return (
       <div className="flex flex-col gap-4">
-        <CopyLink url={state.data.url} note="Send them this link to set a password. It expires in 7 days." />
+        <SentLink
+          emailed={!!state.data.emailed}
+          email={state.data.email ?? ""}
+          url={state.data.url}
+          note="Send them this link to set a password. It expires in 7 days."
+        />
         <Button size="lg" onClick={close}>
           Done
         </Button>

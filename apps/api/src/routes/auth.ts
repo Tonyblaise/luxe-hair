@@ -4,7 +4,9 @@ import {
   accountUpdateSchema,
   addDays,
   changePasswordSchema,
+  emailOnlySchema,
   loginSchema,
+  SIGNUP_OPEN,
   salonResetPasswordSchema,
   signupSchema,
   todayDate,
@@ -13,14 +15,14 @@ import bcrypt from "bcryptjs";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
-import { issueToken, issuedBefore, nextSecond, verifyToken, waitUntil, type TokenPurpose } from "../lib/jwt";
+import { emailBrand, resetEmail, sendLater } from "../lib/email";
+import { issueResetToken, issueToken, issuedBefore, nextSecond, verifyToken, waitUntil, type TokenPurpose } from "../lib/jwt";
 import { getSettings } from "../lib/settings";
+import { DUMMY_HASH } from "../lib/password";
 import { validate } from "../lib/validate";
 import { requireAuth, suspended } from "../middleware/auth";
 import type { AppEnv } from "../types";
 
-// Compared against when the email is unknown, so both failure paths cost the same.
-const DUMMY_HASH = bcrypt.hashSync("not-a-real-password", 10);
 
 const badLink = (purpose: TokenPurpose) =>
   new HTTPException(400, {
@@ -50,6 +52,7 @@ async function resolveLink(token: string, purpose: "invite" | "reset") {
 
 export const authRoutes = new Hono<AppEnv>()
   .post("/signup", validate("json", signupSchema), async (c) => {
+    if (!SIGNUP_OPEN) throw new HTTPException(403, { message: "Sign-up is closed. Ask us for an invite." });
     const input = c.req.valid("json");
     if (await prisma.user.findUnique({ where: { email: input.email } })) {
       throw new HTTPException(409, { message: "An account with this email already exists" });
@@ -152,6 +155,33 @@ export const authRoutes = new Hono<AppEnv>()
     // The sign-in token must be issued at or after tokensValidAfter.
     await waitUntil(updated.tokensValidAfter);
     return c.json({ token: await issueToken(updated) });
+  })
+
+  .post("/forgot", validate("json", emailOnlySchema), async (c) => {
+    const [user, settings] = await Promise.all([
+      prisma.user.findUnique({
+        where: { email: c.req.valid("json").email },
+        include: { teamMember: true, company: { select: { name: true, status: true } } },
+      }),
+      getSettings(),
+    ]);
+    // Only people who could sign in get a link (the same checks as resolveLink's "reset").
+    const canReset =
+      user &&
+      !user.deletedAt &&
+      !(user.bannedUntil && user.bannedUntil > new Date()) &&
+      user.teamMember?.status === "active" &&
+      user.company.status !== "suspended";
+    if (canReset) {
+      const email = resetEmail(emailBrand(settings), user.email, await issueResetToken(user), {
+        firstName: user.teamMember!.firstName,
+        company: user.company.name,
+      });
+      // After the response, so its timing can't reveal whether the account exists.
+      sendLater(c, email);
+    }
+    // Same answer either way, so the form can't be used to discover who has an account.
+    return c.json({ ok: true });
   })
 
   .get("/reset", validate("query", z.object({ token: z.string().min(10).max(2000) })), async (c) => {

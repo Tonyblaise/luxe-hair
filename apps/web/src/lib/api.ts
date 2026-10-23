@@ -1,18 +1,33 @@
 import "server-only";
-import type { AppType } from "@luxe-hair/api";
+import { app, type AppType } from "@luxe-hair/api";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { hc, type ClientResponse } from "hono/client";
 import type { SuccessStatusCode } from "hono/utils/http-status";
 import { redirect } from "next/navigation";
 import { getToken } from "./session";
 
-const API_URL = process.env.API_URL ?? "http://localhost:4000";
+// The Hono app runs inside this Worker: requests never leave it, and the API has no public URL.
+const API_ORIGIN = "http://api.internal";
+
+/** Sends a request straight to the in-process Hono app with this Worker's bindings. */
+export async function apiFetch(input: RequestInfo | URL, init?: RequestInit) {
+  const { env, ctx } = await getCloudflareContext({ async: true });
+  return app.fetch(new Request(input, init), env, ctx);
+}
+
+/** Typed API client that sends `token` (a salon or admin session) as the Bearer header. */
+export function apiClient(token: string | undefined) {
+  return hc<AppType>(API_ORIGIN, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    fetch: apiFetch,
+  });
+}
+
+/** URL for `apiFetch`; `path` is an API path such as `/expenses/<id>/receipt`. */
+export const apiUrl = (path: string) => `${API_ORIGIN}${path}`;
 
 export async function api() {
-  const token = await getToken();
-  return hc<AppType>(API_URL, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-    init: { cache: "no-store" },
-  });
+  return apiClient(await getToken());
 }
 
 export class ApiError extends Error {

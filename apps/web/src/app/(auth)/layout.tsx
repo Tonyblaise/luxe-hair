@@ -9,7 +9,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <Bolt size={20} />
           </span>
           <span className="flex flex-col leading-tight">
-            <span className="text-[17px] font-bold text-white">Salon Manager</span>
+            <span className="text-[17px] font-bold text-white">Luxe Hair</span>
             <span className="text-xs text-white/72">Sign in to your salon</span>
           </span>
         </div>

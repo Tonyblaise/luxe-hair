@@ -3,7 +3,7 @@
 import { formatKES } from "@luxe-hair/shared";
 import { useRouter } from "next/navigation";
 import { useActionState, useState } from "react";
-import { CopyLink } from "@/components/copy-link";
+import { SentLink } from "@/components/copy-link";
 import { Button, Field, FormError, Modal, SelectField, useActionFeedback, useCloseModal } from "@/components/ui";
 import { inviteCompany } from "./company-actions";
 
@@ -34,7 +34,12 @@ function InviteForm({ plans, trialDays, inviteDays }: { plans: Plan[]; trialDays
   if (state?.ok && state.data?.url) {
     return (
       <div className="flex flex-col gap-4">
-        <CopyLink url={state.data.url} note={`Send this to ${owner} at ${email}. It expires in ${inviteDays} days.`} />
+        <SentLink
+          emailed={!!state.data.emailed}
+          email={email}
+          url={state.data.url}
+          note={`Send this to ${owner} at ${email}. It expires in ${inviteDays} days.`}
+        />
         <Button size="lg" onClick={() => router.replace("/admin", { scroll: false })}>
           Done
         </Button>
