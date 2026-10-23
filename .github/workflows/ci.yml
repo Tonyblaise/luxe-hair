@@ -17,6 +17,8 @@ jobs:
     env:
       # prisma.config.ts requires a URL even for `prisma generate`; nothing connects to it here.
       DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      # next.config.ts starts wrangler's local bindings during the build; Hyperdrive needs a URL to start.
+      CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE: postgresql://ci:ci@localhost:5432/ci
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
