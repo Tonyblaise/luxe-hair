@@ -1,7 +1,9 @@
-import { PageBody, PageHeader } from "@/components/shell/page";
-import { Bolt, ButtonLink, Card, Chip, EmptyState, PillLink, PillRow } from "@/components/ui";
+import Link from "next/link";
+import { ActionLabel, PageBody, PageHeader } from "@/components/shell/page";
+import { Bolt, ButtonLink, Card, Chip, EmptyState, ModalLink, PillLink, PillRow, buttonClass } from "@/components/ui";
 import { api, unwrap } from "@/lib/api";
 import { formatKES, plural } from "@/lib/format";
+import { ProductModals } from "./product-modal";
 import { Stepper } from "./stepper";
 
 const FILTERS = [
@@ -25,12 +27,26 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
   const listed =
     filter === "all" ? products : filter === "low" ? low : products.filter((p) => p.type === filter);
 
+  const editHref = (id: string) => `?filter=${filter}&modal=edit-product&product=${id}`;
+  const editLink = (p: { id: string; name: string }) => (
+    <Link href={editHref(p.id)} scroll={false} aria-label={`Edit ${p.name}`} className="text-sm font-semibold text-cyan-600 hover:underline">
+      Edit
+    </Link>
+  );
+
   const statusChip = (isLow: boolean) =>
     isLow ? <Chip tone="warn">Low Stock</Chip> : <Chip tone="info">In Stock</Chip>;
 
   return (
     <>
-      <PageHeader title="Inventory" />
+      <PageHeader
+        title="Inventory"
+        action={
+          <ModalLink id="add-product" className={buttonClass("primary")}>
+            <ActionLabel label="Add Product" short="+ Add" />
+          </ModalLink>
+        }
+      />
       <PageBody>
         {low.length > 0 && (
           <div className="flex flex-wrap items-center gap-4 rounded-lg bg-navy-800 px-6 py-5 text-white">
@@ -62,12 +78,12 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
           </div>
 
           {listed.length === 0 ? (
-            <EmptyState>Nothing to show.</EmptyState>
+            <EmptyState>{products.length === 0 ? "No products yet. Add your first product." : "Nothing to show."}</EmptyState>
           ) : (
             <>
               {/* ≥ 640: table */}
               <div className="overflow-x-auto max-sm:hidden">
-                <table className="w-full min-w-[720px] text-left text-sm">
+                <table className="w-full min-w-[760px] text-left text-sm">
                   <thead>
                     <tr className="text-xs font-medium tracking-[0.04em] text-gray-500 uppercase">
                       <th className="py-2 pr-3 font-medium">Product</th>
@@ -75,7 +91,8 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
                       <th className="px-3 py-2 text-right font-medium">Cost</th>
                       <th className="px-3 py-2 text-right font-medium">Price</th>
                       <th className="px-3 py-2 font-medium">On Hand</th>
-                      <th className="py-2 pl-3 font-medium">Status</th>
+                      <th className="px-3 py-2 font-medium">Status</th>
+                      <th className="py-2 pl-3" />
                     </tr>
                   </thead>
                   <tbody>
@@ -93,7 +110,8 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
                         <td className="px-3 py-3">
                           <Stepper key={`${p.id}:${p.onHand}`} id={p.id} name={p.name} onHand={p.onHand} />
                         </td>
-                        <td className="py-3 pl-3">{statusChip(p.low)}</td>
+                        <td className="px-3 py-3">{statusChip(p.low)}</td>
+                        <td className="py-3 pl-3 text-right">{editLink(p)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -114,7 +132,10 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
                       {statusChip(p.low)}
                     </div>
                     <div className="flex items-center justify-between gap-3">
-                      <span className="text-[13px] text-gray-600">Reorder at {p.reorderAt}</span>
+                      <span className="flex items-center gap-3 text-[13px] text-gray-600">
+                        Reorder at {p.reorderAt}
+                        {editLink(p)}
+                      </span>
                       <Stepper key={`${p.id}:${p.onHand}`} id={p.id} name={p.name} onHand={p.onHand} />
                     </div>
                   </li>
@@ -124,6 +145,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
           )}
         </Card>
       </PageBody>
+      <ProductModals products={products} />
     </>
   );
 }

@@ -121,6 +121,7 @@ Money: `KES 12,345`; charts short form `KES 40k` / `KES 1.2M`.
 
 ### Inventory
 - Alert banner when low: navy card radius 16 padding `20px 24px`, yellow bolt 22px, "N products below reorder level" 16/600, names white/72%, cyan "Show Low Stock" button.
+- Header action "Add Product" ("+ Add" on phones) and an Edit link per product open one product form (name, brand, Retail/Backbar, cost, sell price — none for backbar, on hand, reorder at); Edit also has Delete. Names are unique per salon.
 - Card: pills All / Retail / Backbar / Low Stock; right "Stock value at cost **KES x**".
 - Desktop table (min-width 720): Product (name over "Brand · reorder at N") | Type | Cost | Price ("—" backbar) | On Hand (32px − / + stepper) | Status chip (Low Stock warn / In Stock info). Mobile: name over "Brand · Type · Price", chip, "Reorder at N", 44px stepper.
 

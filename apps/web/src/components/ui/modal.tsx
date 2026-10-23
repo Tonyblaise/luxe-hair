@@ -4,16 +4,19 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useId } from "react";
 
-export function useCloseModal() {
+/** Closes the open modal; `clearParams` drops modal-specific params too (e.g. which record is being edited). */
+export function useCloseModal(clearParams: string[] = []) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
+  const extra = clearParams.join(",");
   return useCallback(() => {
     const next = new URLSearchParams(params);
     next.delete("modal");
+    for (const key of extra ? extra.split(",") : []) next.delete(key);
     const qs = next.toString();
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
-  }, [router, pathname, params]);
+  }, [router, pathname, params, extra]);
 }
 
 /** Opens the modal with this id by adding ?modal=<id>, keeping other params. */
@@ -26,9 +29,19 @@ export function ModalLink({ id, ...props }: Omit<React.ComponentProps<typeof Lin
 }
 
 /** Centred dialog from 640px up, bottom sheet below. Open while ?modal=<id>. */
-export function Modal({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
+export function Modal({
+  id,
+  title,
+  clearParams,
+  children,
+}: {
+  id: string;
+  title: string;
+  clearParams?: string[];
+  children: React.ReactNode;
+}) {
   const open = useSearchParams().get("modal") === id;
-  const close = useCloseModal();
+  const close = useCloseModal(clearParams);
   const titleId = useId();
 
   useEffect(() => {

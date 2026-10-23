@@ -216,10 +216,32 @@ export type EmployeeUpdateInput = z.infer<typeof employeeUpdateSchema>;
 
 export const inventoryAdjustSchema = z.object({ delta: z.number().int().min(-1000).max(1000) });
 
+/** Empty input means "not set". */
+const optionalMoney = z
+  .union([z.literal(""), z.null(), z.coerce.number().int().min(0).max(100_000_000)])
+  .optional()
+  .transform((v) => (v === "" || v == null ? null : v));
+
+export const productSchema = z
+  .object({
+    name: z.string().trim().min(1, "Enter the product name.").max(120),
+    brand: optionalText(80),
+    type: z.enum(INVENTORY_TYPES),
+    unitCost: optionalMoney,
+    price: optionalMoney,
+    reorderPoint: z.coerce.number().int().min(0, "Reorder point can't be negative.").max(100_000),
+    quantityInStock: z.coerce.number().int().min(0, "Stock on hand can't be negative.").max(1_000_000),
+  })
+  // Backbar stock is used in services, never sold, so it has no sell price.
+  .transform((p) => (p.type === "backbar" ? { ...p, price: null } : p));
+export type ProductInput = z.input<typeof productSchema>;
+
 export const expenseCreateSchema = z.object({
   amount: z.coerce.number().int().min(1).max(100_000_000),
   category: z.enum(EXPENSE_CATEGORIES),
   description: z.string().trim().min(1).max(200),
+  // Defaults to today when omitted.
+  date: isoDate.optional(),
   repeatsMonthly: z
     .union([z.boolean(), z.literal("true"), z.literal("false"), z.literal("on")])
     .optional()
@@ -240,8 +262,6 @@ export const COMPANY_STATUS_LABELS: Record<CompanyStatus, string> = {
 const adminPassword = z.string().min(8, "At least 8 characters.").max(200);
 
 export const companyInviteSchema = z.object({
-  // Defaults to today when omitted.
-  date: isoDate.optional(),
   name: z.string().trim().min(1, "Enter the company name.").max(120),
   city: optionalText(80),
   ownerName: z.string().trim().min(1, "Enter the owner's name.").max(160),
