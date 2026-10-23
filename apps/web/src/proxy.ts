@@ -57,5 +57,6 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/|favicon.ico|logout|admin/logout).*)"],
+  // Icons (app/icon.svg, apple-icon.png, favicon.ico) must load without a session, or the sign-in page has none.
+  matcher: ["/((?!_next/|favicon.ico|icon|apple-icon|logout|admin/logout).*)"],
 };
