@@ -63,14 +63,18 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
         </Card>
 
         <KpiGrid>
-          <KpiTile label="Sales" value={formatKES(sales)} sub={`Avg ${formatKES(sales / months.length)} / month`} />
-          <KpiTile label="Expenses" value={formatKES(expenses)} sub={`Avg ${formatKES(expenses / months.length)} / month`} />
+          <KpiTile label="Sales" value={formatKES(sales)} />
+          <KpiTile label="Expenses" value={formatKES(expenses)} />
           <KpiTile
             label="Profit"
             value={formatKES(sales - expenses)}
             sub={`${sales ? Math.round(((sales - expenses) / sales) * 100) : 0}% margin`}
           />
-          <KpiTile label="Best Month" value={formatMonthYear(parseMonthKey(best.month))} sub={`${formatKES(best.sales)} in sales`} />
+          {best.sales > 0 ? (
+            <KpiTile label="Best Month" value={formatMonthYear(parseMonthKey(best.month))} sub={`${formatKES(best.sales)} in sales`} />
+          ) : (
+            <KpiTile label="Best Month" value="—" sub="No sales yet" />
+          )}
         </KpiGrid>
 
         <ReportsView key={`${from}:${to}`} months={months} />

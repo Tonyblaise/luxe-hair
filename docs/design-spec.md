@@ -80,7 +80,7 @@ Money: `KES 12,345`; charts short form `KES 40k` / `KES 1.2M`.
 
 ### Reports
 - Controls: From/To month selects (min-width 150, last 12 months), caption "12 months · {Month} is month to date", presets Last 3 Months / Last 6 Months / Year to Date / Last 12 Months.
-- KPIs: Sales ("Avg KES x / month"), Expenses (avg), Profit ("x% margin"), Best Month ("Sep 2026", "KES x in sales").
+- KPIs: Sales, Expenses (no averages), Profit ("x% margin"), Best Month ("Sep 2026", "KES x in sales"; "—" / "No sales yet" when there are none).
 - "Sales vs Expenses by Month": legend Sales cyan-400, Expenses navy-800; selected-month summary box (paper): Month / Sales / Expenses / Profit · margin. Bar chart: y-axis 52px, plot h280, dashed gray-200 gridlines, solid gray-400 baseline, ticks "KES 40k"; paired bars width 28% (38% if > 6 months), max 36px, top radius 4; partial month 60% opacity; click selects column (tint `rgba(79,195,247,.12)`, radius `8px 8px 0 0`); x labels 12px, selected 600 navy.
 - "Expenses by Category": stacked bar per month, 70% width (max 44). Colors: Rent & Utilities navy-800, Products & Supplies #A9DEF7, Payroll cyan-400, Marketing yellow-400, Equipment gray-400.
 - "{Month} Breakdown": total, categories sorted by % (swatch, %, total, bar). Footnote "Click any month in either chart to review it here."
