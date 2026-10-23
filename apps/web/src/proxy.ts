@@ -6,7 +6,7 @@ const ADMIN_COOKIE = "lh_admin";
 const AUTH_PAGES = ["/login", "/signup"];
 const ADMIN_AUTH_PAGES = ["/admin/login"];
 // Reachable with or without a session.
-const OPEN_PAGES = ["/accept-invite", "/reset-password", "/admin/reset"];
+const OPEN_PAGES = ["/welcome", "/accept-invite", "/reset-password", "/admin/reset"];
 
 const matches = (pathname: string, paths: string[]) =>
   paths.some((p) => pathname === p || pathname.startsWith(`${p}/`));
@@ -25,6 +25,8 @@ export function proxy(request: NextRequest) {
   }
 
   const hasToken = request.cookies.has(TOKEN_COOKIE);
+  // Home is the dashboard when signed in, the landing page otherwise.
+  if (pathname === "/" && !hasToken) return NextResponse.rewrite(new URL("/welcome", request.url));
   if (matches(pathname, AUTH_PAGES)) return hasToken ? go("/") : NextResponse.next();
   return hasToken ? NextResponse.next() : go("/login");
 }

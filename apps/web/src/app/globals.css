@@ -58,6 +58,10 @@
     @apply bg-offwhite font-sans text-navy-800 antialiased;
     line-height: 1.65;
   }
+  /* The landing page's #features / #faq links glide; the app keeps instant scrolling. */
+  html:has(.landing) {
+    scroll-behavior: smooth;
+  }
   h1,
   h2,
   h3 {

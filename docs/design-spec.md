@@ -133,3 +133,9 @@ Money: `KES 12,345`; charts short form `KES 40k` / `KES 1.2M`.
 ## Behaviour
 - Every mutation shows a toast.
 - Payout maths: service commission = count × price × rate% (or count × flat); retail commission 10% of retail; total = service + retail commission + tips. Pay week Mon–Sun, pays Sunday.
+
+## Landing page (`Salon Manager Landing.dc.html`)
+
+Public marketing page in `apps/web/src/app/welcome`, served at `/` to signed-out visitors (proxy rewrite) and at `/welcome` to anyone. Sections: navy hero with nav (Features, FAQ, Sign In) and a static dashboard mock; Features (6 cards, lucide icons inlined in `welcome/icons.tsx`); How it works (3 numbered steps); FAQ (exclusive `<details name="faq">` accordion, first open); navy closing CTA with footer. No media queries: `clamp()` sizes and `auto-fit` grids, as in the design.
+
+Deviations: "Sign In" → `/login`, "Start Free Trial" → `/signup` (the design links both to the app file). No pricing section, as in the design. Contact uses the design's `support@salonmanager.co.ke`, not `PlatformSettings.supportEmail`.
