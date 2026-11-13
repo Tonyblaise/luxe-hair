@@ -158,3 +158,7 @@ The first deploy (Railway database, Hyperdrive, R2 bucket, Worker secrets, Resen
 **UI changes**: follow `docs/design-spec.md` for the salon app and `docs/admin-spec.md` for the admin console. Both list where the app deliberately differs from the design.
 
 Run `npm run typecheck` before you push; CI runs it too.
+
+## Licence
+
+Proprietary. Copyright (c) 2026 Tonyblaise, all rights reserved. The code is public to read, but you may not use, copy, modify or host it without written permission. See [`LICENSE`](LICENSE).
